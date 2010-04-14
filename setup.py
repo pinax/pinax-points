@@ -7,7 +7,7 @@ setup(
     author = "Eldarion",
     author_email = "development@eldarion.com",
     description = "a reusable Django points, positions and levels application",
-    long_description = open("README").read(),
+    long_description = open("README.rst").read(),
     license = "BSD",
     url = "http://github.com/eldarion/agon",
     packages = [
