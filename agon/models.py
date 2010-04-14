@@ -66,7 +66,7 @@ def award_points(target, key):
     else:
         apv.target_object = target
         lookup_params = {
-            "target_content_type": apv.target.content_type,
+            "target_content_type": apv.target_content_type,
             "target_object_id": apv.target_object_id,
         }
     apv.save()

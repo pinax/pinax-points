@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, TransactionTestCase
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from agon.models import award_points, points_awarded
 
@@ -54,6 +54,14 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         user = self.users[0]
         award_points(user, "JOINED_SITE")
         self.assertEqual(points_awarded(user), 1)
+    
+    def test_simple_generic_point_award(self):
+        self.setup_points({
+            "ATE_SOMETHING": 5,
+        })
+        group = Group.objects.create(name="Dwarfs")
+        award_points(group, "ATE_SOMETHING")
+        self.assertEqual(points_awarded(group), 5)
 
 
 class PointsTransactionTestCase(BasePointsTestCase, TransactionTestCase):
