@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
-from agon.signals import points_awarded
+from agon import signals
 
 
 class AwardedPointValue(models.Model):
@@ -84,7 +84,7 @@ def award_points(target, key):
             transaction.savepoint_rollback(sid)
             TargetStat.update_points(points_given, lookup_params)
     
-    points_awarded.send(sender=target.__class__, target=target, key=key)
+    signals.points_awarded.send(sender=target.__class__, target=target, key=key)
 
 
 def points_awarded(target):
