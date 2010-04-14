@@ -17,6 +17,10 @@ class PointsTestCase(TestCase):
             for i in xrange(1)
         ]
     
+    def tearDown(self):
+        if hasattr(settings, "AGON_POINT_VALUES"):
+            del settings.AGON_POINT_VALUES
+    
     def setup_points(self, value):
         settings.AGON_POINT_VALUES = value
     
@@ -42,6 +46,9 @@ class PointsTestCase(TestCase):
 
     def test_concurrent_award(self):
         user = self.users[0]
+        self.setup_points({
+            "TEST_1": 10,
+        })
         return
         def run():
             award_points(user, "TEST_1")
