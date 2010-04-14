@@ -41,6 +41,16 @@ class TargetPointTotal(models.Model):
     
     class Meta:
         unique_together = [("target_content_type", "target_object_id")]
+    
+    @classmethod
+    def full_calculate(cls):
+        """
+        Performs a full calculation of points for targets and stores them.
+        This method will be the way to populate/re-calculate all target
+        total point values.
+        """
+        # @@@ write this method
+        pass
 
 
 def award_points(target, key):
