@@ -20,8 +20,9 @@ class BasePointsTestCase(object):
     
     def setUp(self):
         self.users = [
-            User.objects.create_user("user_%d" % i, "user_%d@example.com" % i, str(i))
-            for i in xrange(1)
+            User.objects.create_user(
+                "user_%d" % i, "user_%d@example.com" % i, str(i)
+            ) for i in xrange(1)
         ]
     
     def tearDown(self):
