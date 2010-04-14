@@ -1,7 +1,7 @@
 import datetime
 
 from django.core.exceptions import ImproperlyConfigured
-from django.db import models
+from django.db import models, transaction, IntegrityError
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
@@ -66,10 +66,18 @@ def award_points(target, key):
     
     points_given = lookup_point_value(key)
     
-    # @@@ need to check if TargetStat exists first (create it if it does not)
-    TargetStat.objects.filter(**lookup_params).update(
+    updated = TargetStat.objects.filter(**lookup_params).update(
         total = models.F("total") + points_given,
     )
+    if not updated:
+        try:
+            sid = transaction.savepoint()
+            TargetStat._default_manager.create(
+                **dict(lookup_params, points=points_given)
+            )
+            transaction.savepoint_commit(sid)
+        except IntegrityError, e:
+            transaction.savepoint_rollback(sid)
     
     points_awarded.send(sender=target.__class__, target=target, key=key)
 
