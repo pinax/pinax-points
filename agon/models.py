@@ -26,31 +26,24 @@ class AwardedPointValue(models.Model):
     timestamp = models.DateTimeField(default=datetime.datetime.now)
 
 
-class TargetPointTotal(models.Model):
+class TargetStat(models.Model):
     """
-    Stores a single row for each target and their total point value.
+    Stores a single row for each target and their stats (points, position and
+    level).
     """
     
     # object association (User is special-cased as it's a common case)
-    target_user = models.ForeignKey(User, null=True, unique=True)
+    target_user = models.OneToOneField(User, null=True)
     target_content_type = models.ForeignKey(ContentType, null=True)
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
     
-    total = models.IntegerField()
+    points = models.IntegerField(default=0)
+    position = models.PositiveIntegerField(null=True)
+    level = models.PositiveIntegerField(default=1)
     
     class Meta:
         unique_together = [("target_content_type", "target_object_id")]
-    
-    @classmethod
-    def full_calculate(cls):
-        """
-        Performs a full calculation of points for targets and stores them.
-        This method will be the way to populate/re-calculate all target
-        total point values.
-        """
-        # @@@ write this method
-        pass
 
 
 def award_points(target, key):
@@ -73,7 +66,8 @@ def award_points(target, key):
     
     points_given = lookup_point_value(key)
     
-    TargetPointTotal.objects.filter(**lookup_params).update(
+    # @@@ need to check if TargetStat exists first (create it if it does not)
+    TargetStat.objects.filter(**lookup_params).update(
         total = models.F("total") + points_given,
     )
     
