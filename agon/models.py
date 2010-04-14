@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
+from agon.signals import points_awarded
+
 
 class AwardedPointValue(models.Model):
     """
@@ -64,6 +66,8 @@ def award_points(target, key):
     TargetPointTotal.objects.filter(**lookup_params).update(
         total = models.F("total") + points_given,
     )
+    
+    points_awarded.send(sender=target.__class__, target=target, key=key)
 
 
 def lookup_point_value(key):
