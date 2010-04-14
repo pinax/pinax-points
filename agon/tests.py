@@ -15,6 +15,7 @@ def skipIf(cond):
             return func
     return inner
 
+
 class PointsTestCase(TestCase):
     def setUp(self):
         self.users = [
@@ -55,7 +56,6 @@ class PointsTestCase(TestCase):
         self.setup_points({
             "INVITED_USER": 10,
         })
-
         def run():
             award_points(user, "INVITED_USER")
         threads = []
