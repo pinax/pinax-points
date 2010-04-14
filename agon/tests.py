@@ -2,7 +2,7 @@ from threading import Thread
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 
 from django.contrib.auth.models import User
 
@@ -16,7 +16,7 @@ def skipIf(cond):
     return inner
 
 
-class PointsTestCase(TestCase):
+class BasePointsTestCase(object):
     def setUp(self):
         self.users = [
             User.objects.create_user("user_%d" % i, "user_%d@example.com" % i, str(i))
@@ -30,6 +30,8 @@ class PointsTestCase(TestCase):
     def setup_points(self, value):
         settings.AGON_POINT_VALUES = value
     
+
+class PointsTestCase(BasePointsTestCase, TestCase):
     def test_improperly_configured(self):
         user = self.users[0]
         try:
@@ -49,7 +51,9 @@ class PointsTestCase(TestCase):
         user = self.users[0]
         award_points(user, "JOINED_SITE")
         self.assertEqual(points_awarded(user), 1)
-    
+
+
+class TransactionPointsTestCase(BasePointsTestCase, TransactionTestCase):
     @skipIf(settings.DATABASE_ENGINE == "sqlite3")
     def test_concurrent_award(self):
         user = self.users[0]
