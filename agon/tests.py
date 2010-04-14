@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 from agon.models import award_points, points_awarded
 
 
-
 class PointsTestCase(TestCase):
     def setUp(self):
         self.users = [
@@ -43,15 +42,15 @@ class PointsTestCase(TestCase):
         user = self.users[0]
         award_points(user, "JOINED_SITE")
         self.assertEqual(points_awarded(user), 1)
-
+    
     def test_concurrent_award(self):
         user = self.users[0]
         self.setup_points({
-            "TEST_1": 10,
+            "INVITED_USER": 10,
         })
         return
         def run():
-            award_points(user, "TEST_1")
+            award_points(user, "INVITED_USER")
         threads = []
         for i in xrange(5):
             t = Thread(target=run)
@@ -59,5 +58,4 @@ class PointsTestCase(TestCase):
             t.start()
         for t in threads:
             t.join()
-        self.assertEqual(points_awarded(user), 50)    
-
+        self.assertEqual(points_awarded(user), 50)
