@@ -87,6 +87,19 @@ def award_points(target, key):
     points_awarded.send(sender=target.__class__, target=target, key=key)
 
 
+def points_awarded(target):
+    if isinstance(target, User):
+        lookup_params = {
+            "target_user": target,
+        }
+    else:
+        lookup_params = {
+            "target_content_type": ContentType.objects.get_for_model(target),
+            "target_object_id": target.pk,
+        }
+    return TargetStat.objects.get(**lookup_params).points
+
+
 def lookup_point_value(key):
     try:
         value = settings.AGON_POINT_VALUES[key]

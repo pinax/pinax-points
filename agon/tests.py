@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from django.contrib.auth.models import User
 
-from agon.models import award_points
+from agon.models import award_points, points_awarded
 
 
 class PointsTestCase(TestCase):
@@ -23,3 +23,11 @@ class PointsTestCase(TestCase):
             award_points(user, "JOINED_SITE")
         except ImproperlyConfigured, e:
             self.assertEqual(str(e), "You must define a point value for 'JOINED_SITE'")
+    
+    def test_simple_user_point_award(self):
+        self.setup_points({
+            "JOINED_SITE": 1,
+        })
+        user = User.objects.create_user("brian", "someone@example.com", "abc123")
+        award_points(user, "JOINED_SITE")
+        self.assertEqual(points_awarded(user), 1)
