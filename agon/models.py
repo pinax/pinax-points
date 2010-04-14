@@ -42,6 +42,9 @@ class TargetPointTotal(models.Model):
 
 
 def award_points(target, key):
+    """
+    Awards target the point value for key
+    """
     apv = AwardedPointValue(key=key)
     if isinstance(target, User):
         apv.target_user = target
