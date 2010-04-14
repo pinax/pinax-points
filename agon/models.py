@@ -67,7 +67,7 @@ def award_points(target, key):
     points_given = lookup_point_value(key)
     
     updated = TargetStat.objects.filter(**lookup_params).update(
-        total = models.F("total") + points_given,
+        points = models.F("points") + points_given,
     )
     if not updated:
         try:
