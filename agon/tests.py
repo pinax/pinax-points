@@ -17,6 +17,7 @@ def skipIf(cond):
 
 
 class BasePointsTestCase(object):
+    
     def setUp(self):
         self.users = [
             User.objects.create_user("user_%d" % i, "user_%d@example.com" % i, str(i))
@@ -29,9 +30,10 @@ class BasePointsTestCase(object):
     
     def setup_points(self, value):
         settings.AGON_POINT_VALUES = value
-    
+
 
 class PointsTestCase(BasePointsTestCase, TestCase):
+    
     def test_improperly_configured(self):
         user = self.users[0]
         try:
@@ -54,6 +56,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
 
 
 class TransactionPointsTestCase(BasePointsTestCase, TransactionTestCase):
+    
     @skipIf(settings.DATABASE_ENGINE == "sqlite3")
     def test_concurrent_award(self):
         user = self.users[0]
