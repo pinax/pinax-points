@@ -9,6 +9,12 @@ from django.contrib.auth.models import User
 from agon.models import award_points, points_awarded
 
 
+def skipIf(cond):
+    def inner(func):
+        if not cond:
+            return func
+    return inner
+
 class PointsTestCase(TestCase):
     def setUp(self):
         self.users = [
@@ -43,12 +49,13 @@ class PointsTestCase(TestCase):
         award_points(user, "JOINED_SITE")
         self.assertEqual(points_awarded(user), 1)
     
+    @skipIf(settings.DATABASE_ENGINE == "sqlite3")
     def test_concurrent_award(self):
         user = self.users[0]
         self.setup_points({
             "INVITED_USER": 10,
         })
-        return
+
         def run():
             award_points(user, "INVITED_USER")
         threads = []
