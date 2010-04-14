@@ -44,6 +44,12 @@ class TargetStat(models.Model):
     
     class Meta:
         unique_together = [("target_content_type", "target_object_id")]
+    
+    @classmethod
+    def update_points(cls, given, lookup_params):
+        return cls._default_manager.filter(**lookup_params).update(
+            points = models.F("points") + given,
+        )
 
 
 def award_points(target, key):
@@ -66,10 +72,7 @@ def award_points(target, key):
     
     points_given = lookup_point_value(key)
     
-    updated = TargetStat.objects.filter(**lookup_params).update(
-        points = models.F("points") + points_given,
-    )
-    if not updated:
+    if not TargetStat.update_points(points_given, lookup_params):
         try:
             sid = transaction.savepoint()
             TargetStat._default_manager.create(
@@ -78,6 +81,7 @@ def award_points(target, key):
             transaction.savepoint_commit(sid)
         except IntegrityError, e:
             transaction.savepoint_rollback(sid)
+            TargetStat.update_points(points_given, lookup_params)
     
     points_awarded.send(sender=target.__class__, target=target, key=key)
 
