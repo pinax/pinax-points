@@ -55,7 +55,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         self.assertEqual(points_awarded(user), 1)
 
 
-class TransactionPointsTestCase(BasePointsTestCase, TransactionTestCase):
+class PointsTransactionTestCase(BasePointsTestCase, TransactionTestCase):
     
     @skipIf(settings.DATABASE_ENGINE == "sqlite3")
     def test_concurrent_award(self):
