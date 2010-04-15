@@ -19,6 +19,11 @@ class PointValue(models.Model):
     
     key = models.CharField(max_length=255)
     value = models.IntegerField()
+    
+    @classmethod
+    def create(cls, key, value):
+        # simple wrapper in-case creation needs to be wrapped
+        cls._default_manager.create(key=key, value=value)
 
 
 class AwardedPointValue(models.Model):

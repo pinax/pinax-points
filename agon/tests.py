@@ -32,7 +32,7 @@ class BasePointsTestCase(object):
     
     def setup_points(self, value):
         for k, v in value.iteritems():
-            PointValue(key=k, value=v).save()
+            PointValue.create(key=k, value=v)
 
 
 class PointsTestCase(BasePointsTestCase, TestCase):
