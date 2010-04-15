@@ -6,7 +6,7 @@ from django.test import TestCase, TransactionTestCase
 
 from django.contrib.auth.models import User, Group
 
-from agon.models import TargetStat
+from agon.models import TargetStat, PointValue
 from agon.models import award_points, points_awarded
 
 
@@ -31,7 +31,8 @@ class BasePointsTestCase(object):
         ]
     
     def setup_points(self, value):
-        settings.AGON_POINT_VALUES = value
+        for k, v in value.iteritems():
+            PointValue(key=k, value=v).save()
 
 
 class PointsTestCase(BasePointsTestCase, TestCase):
@@ -42,12 +43,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         try:
             award_points(user, "JOINED_SITE")
         except ImproperlyConfigured, e:
-            self.assertEqual(str(e), "You must define 'AGON_POINT_VALUES' in settings")
-        self.setup_points({})
-        try:
-            award_points(user, "JOINED_SITE")
-        except ImproperlyConfigured, e:
-            self.assertEqual(str(e), "You must define a point value for 'JOINED_SITE'")
+            self.assertEqual(str(e), "PointValue for 'JOINED_SITE' does not exist")
     
     def test_simple_user_point_award(self):
         self.setup_users(1)

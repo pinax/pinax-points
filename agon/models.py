@@ -12,6 +12,15 @@ from django.contrib.contenttypes.models import ContentType
 from agon import signals
 
 
+class PointValue(models.Model):
+    """
+    Stores a key and its point value. Simple.
+    """
+    
+    key = models.CharField(max_length=255)
+    value = models.IntegerField()
+
+
 class AwardedPointValue(models.Model):
     """
     Stores a single row for each time a point value is awarded. Can be used
@@ -24,7 +33,7 @@ class AwardedPointValue(models.Model):
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
     
-    key = models.CharField(max_length=255)
+    value = models.ForeignKey(PointValue)
     timestamp = models.DateTimeField(default=datetime.datetime.now)
 
 
@@ -84,7 +93,14 @@ def award_points(target, key):
     """
     Awards target the point value for key
     """
-    apv = AwardedPointValue(key=key)
+    try:
+        point_value = PointValue.objects.get(key=key)
+    except PointValue.DoesNotExist:
+        raise ImproperlyConfigured("PointValue for '%s' does not exist" % key)
+    else:
+        points_given = point_value.value
+    
+    apv = AwardedPointValue(value=point_value)
     if isinstance(target, User):
         apv.target_user = target
         lookup_params = {
@@ -97,8 +113,6 @@ def award_points(target, key):
             "target_object_id": apv.target_object_id,
         }
     apv.save()
-    
-    points_given = lookup_point_value(key)
     
     if not TargetStat.update_points(points_given, lookup_params):
         try:
@@ -130,18 +144,3 @@ def points_awarded(target):
             "target_object_id": target.pk,
         }
     return TargetStat.objects.get(**lookup_params).points
-
-
-def lookup_point_value(key):
-    try:
-        value = settings.AGON_POINT_VALUES[key]
-    except AttributeError:
-        raise ImproperlyConfigured(
-            "You must define 'AGON_POINT_VALUES' in settings"
-        )
-    except KeyError:
-        raise ImproperlyConfigured(
-            "You must define a point value for '%s'" % key
-        )
-    else:
-        return value
