@@ -92,6 +92,16 @@ class TargetStat(models.Model):
             for target_stat in target_stats:
                 pks.append(target_stat.pk)
             cls._default_manager.filter(pk__in=pks).update(position=position)
+    
+    @property
+    def target(self):
+        """
+        Abstraction to getting the target object of this stat object.
+        """
+        if self.target_user_id:
+            return self.target_user
+        else:
+            return self.target_object
 
 
 def award_points(target, key):

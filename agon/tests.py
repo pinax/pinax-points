@@ -2,6 +2,7 @@ from threading import Thread
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.template import Template, Context, TemplateSyntaxError
 from django.test import TestCase, TransactionTestCase
 
 from django.contrib.auth.models import User, Group
@@ -147,3 +148,37 @@ class PositionsTestCase(BasePointsTestCase, TestCase):
             [(p.position, p.points) for p in TargetStat.objects.order_by("position")],
             [(1, 100), (2, 90), (3, 70), (3, 70), (5, 69), (6, 60), (7, 50), (8, 10), (9, 5)]
         )
+
+
+class TopObjectsTagTestCase(TestCase):
+    
+    def test_no_args(self):
+        try:
+            t = Template("{% load agon_tags %}{% top_objects %}")
+        except TemplateSyntaxError, e:
+            self.assertEqual(str(e), "'top_objects' takes exactly three or six arguments (second argument must be 'as')")
+    
+    def test_typo_as(self):
+        """
+        The Alex test.
+        """
+        try:
+            t = Template('{% load agon_tags %}{% top_objects "auth.User" a top_users %}')
+        except TemplateSyntaxError, e:
+            self.assertEqual(str(e), "Second argument to 'top_objects' must be 'as'")
+    
+    def test_bad_model_arg(self):
+        t = Template('{% load agon_tags %}{% top_objects "auth" as top_users %}')
+        try:
+            t.render(Context({}))
+        except ValueError, e:
+            self.assertEqual(str(e), "'auth' does not result in a model. Is it correct?")
+        
+        t = Template('{% load agon_tags %}{% top_objects "auth.U" as top_users %}')
+        try:
+            t.render(Context({}))
+        except ValueError, e:
+            self.assertEqual(str(e), "'auth.U' does not result in a model. Is it correct?")
+
+
+
