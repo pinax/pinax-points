@@ -14,7 +14,7 @@ class TopObjectsNode(template.Node):
     def handle_token(cls, parser, token):
         bits = token.split_contents()
         
-        if len(bits) != 4 or len(bits) != 6:
+        if len(bits) != 4 and len(bits) != 6:
             raise template.TemplateSyntaxError("%r takes exactly three or six "
                 "arguments (second argument must be 'as')" % str(bits[0]))
         if bits[2] != "as":
@@ -22,7 +22,8 @@ class TopObjectsNode(template.Node):
                 "'as'" % str(bits[0]))
         if len(bits) == 6:
             if bits[4] != "limit":
-                raise template.TemplateSyntaxError("test")
+                raise template.TemplateSyntaxError("Fourth argument to %r must be "
+                    "'limit'" % bits[0])
             limit = bits[5]
         else:
             limit = None
