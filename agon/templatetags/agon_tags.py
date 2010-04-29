@@ -28,7 +28,7 @@ class TopObjectsNode(template.Node):
         else:
             limit = None
         
-        return cls(bits[1], bits[3])
+        return cls(bits[1], bits[3], limit)
     
     def __init__(self, model, context_var, limit):
         self.model = template.Variable(model)
