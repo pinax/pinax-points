@@ -158,4 +158,7 @@ def points_awarded(target):
             "target_content_type": ContentType.objects.get_for_model(target),
             "target_object_id": target.pk,
         }
-    return TargetStat.objects.get(**lookup_params).points
+    try:
+        return TargetStat.objects.get(**lookup_params).points
+    except TargetStat.DoesNotExist:
+        return 0

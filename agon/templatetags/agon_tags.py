@@ -4,7 +4,7 @@ from django.db.models.loading import cache as app_cache
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 
-from agon.models import TargetStat
+from agon.models import TargetStat, points_awarded
 
 
 register = template.Library()
@@ -82,3 +82,42 @@ def top_objects(parser, token):
         {% top_objects "auth.User" as top_users %}
     """
     return TopObjectsNode.handle_token(parser, token)
+
+
+class PointsForObjectNode(template.Node):
+    @classmethod
+    def handle_token(cls, parser, token):
+        bits = token.split_contents()
+        if len(bits) == 2:
+            return cls(bits[1])
+        elif len(bits) == 4:
+            if bits[2] != "as":
+                raise template.TemplateSyntaxError("Second argument to %r "
+                    "should be 'as'" % bits[0])
+            return cls(bits[1], bits[3])
+        raise template.TemplateSyntaxError("%r takes 1 or 3 arguments." % bits[0])
+    
+    def __init__(self, obj, context_var=None):
+        self.obj = template.Variable(obj)
+        self.context_var = context_var
+    
+    def render(self, context):
+        obj = self.obj.resolve(context)
+        points = points_awarded(obj)
+        if self.context_var is not None:
+            context[self.context_var] = points
+            return ""
+        return unicode(points)
+
+@register.tag
+def points_for_object(parser, token):
+    """
+    Gets the current points for an object, usage:
+        
+        {% points_for_object user %}
+    
+    or
+        
+        {% points_for_object user as points %}
+    """
+    return PointsForObjectNode.handle_token(parser, token)
