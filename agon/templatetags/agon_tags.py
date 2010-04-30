@@ -4,6 +4,8 @@ from django.db.models.loading import cache as app_cache
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 
+from agon.models import TargetStat
+
 
 register = template.Library()
 
@@ -27,7 +29,6 @@ class TopObjectsNode(template.Node):
             limit = bits[5]
         else:
             limit = None
-        
         return cls(bits[1], bits[3], limit)
     
     def __init__(self, model, context_var, limit):
