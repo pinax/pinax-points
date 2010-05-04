@@ -1,3 +1,4 @@
 MANIFEST
 dist
 *.py[co]
+agon.egg-info

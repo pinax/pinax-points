@@ -51,7 +51,7 @@ class TopObjectsNode(template.Node):
         else:
             if model is None:
                 raise incorrect_value
-        queryset = TargetStat.objects.order_by("-position")
+        queryset = TargetStat.objects.order_by("position")
         if issubclass(model, User):
             queryset = queryset.exclude(target_user=None)
             queryset = queryset.select_related("target_user")
@@ -62,7 +62,7 @@ class TopObjectsNode(template.Node):
             # underlying cache with a single query using __in)
             ct = ContentType.objects.get_for_model(model)
             queryset.filter(target_content_type=ct)
-
+        
         if self.limit is not None:
             limit = self.limit.resolve(context)
             queryset = queryset[:limit]
