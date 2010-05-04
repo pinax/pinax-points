@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name = "agon",
-    version = "0.1.dev4",
+    version = "0.1.dev5",
     author = "Eldarion",
     author_email = "development@eldarion.com",
     description = "a reusable Django points, positions and levels application",
