@@ -1,3 +1,5 @@
+import datetime
+
 from django import template
 from django.db.models.loading import cache as app_cache
 
@@ -22,11 +24,17 @@ class TopObjectsNode(template.Node):
         if bits[2] != "as":
             raise template.TemplateSyntaxError("Second argument to %r must be "
                 "'as'" % str(bits[0]))
-        if len(bits) == 6:
+        if len(bits) == 6 or len(bits) == 7:
             if bits[4] != "limit":
                 raise template.TemplateSyntaxError("Fourth argument to %r must be "
                     "'limit'" % bits[0])
-            limit = bits[5]
+            if len(bits) == 7:
+                # @@@ fully implement
+                limit = None
+                # n, timeframe = bits[5], bits[6]
+                # limit = datetime.timedelta(**{timeframe: n})
+            else:
+                limit = bits[5]
         else:
             limit = None
         return cls(bits[1], bits[3], limit)
@@ -90,7 +98,8 @@ class PointsForObjectNode(template.Node):
         bits = token.split_contents()
         if len(bits) == 2:
             return cls(bits[1])
-        elif len(bits) == 4:
+        elif len(bits) == 4 or len(bits) == 7:
+            # len(bits) == 7 will support interval timeframing
             if bits[2] != "as":
                 raise template.TemplateSyntaxError("Second argument to %r "
                     "should be 'as'" % bits[0])
