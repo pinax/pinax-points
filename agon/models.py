@@ -24,6 +24,9 @@ class PointValue(models.Model):
     def create(cls, key, value):
         # simple wrapper in-case creation needs to be wrapped
         cls._default_manager.create(key=key, value=value)
+    
+    def __unicode__(self):
+        return u"%s points for %s" % (self.value, self.key)
 
 
 class AwardedPointValue(models.Model):
@@ -40,6 +43,13 @@ class AwardedPointValue(models.Model):
     
     value = models.ForeignKey(PointValue)
     timestamp = models.DateTimeField(default=datetime.datetime.now)
+    
+    @property
+    def target(self):
+        return self.target_user or self.target_object
+                
+    def __unicode__(self):
+        return u"%s awarded to %s" % (self.value, self.target)
 
 
 class TargetStat(models.Model):
