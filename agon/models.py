@@ -1,7 +1,6 @@
 import datetime
 import itertools
 
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction, IntegrityError
 
@@ -146,7 +145,7 @@ def award_points(target, key):
                 **dict(lookup_params, points=points_given)
             )
             transaction.savepoint_commit(sid)
-        except IntegrityError, e:
+        except IntegrityError:
             transaction.savepoint_rollback(sid)
             TargetStat.update_points(points_given, lookup_params)
     
