@@ -40,7 +40,8 @@ class AwardedPointValue(models.Model):
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
     
-    value = models.ForeignKey(PointValue)
+    value = models.ForeignKey(PointValue, null=True)
+    points = models.IntegerField()
     timestamp = models.DateTimeField(default=datetime.datetime.now)
     
     @property
@@ -48,7 +49,10 @@ class AwardedPointValue(models.Model):
         return self.target_user or self.target_object
                 
     def __unicode__(self):
-        return u"%s awarded to %s" % (self.value, self.target)
+        val = self.value
+        if self.value is None:
+            val = "%s points" % self.points
+        return u"%s awarded to %s" % (val, self.target)
 
 
 class TargetStat(models.Model):
@@ -115,16 +119,26 @@ class TargetStat(models.Model):
 
 def award_points(target, key):
     """
-    Awards target the point value for key
+    Awards target the point value for key.  If key is an integer then it's a
+    one off assignment and should be interpreted as the actual point value.
     """
-    try:
-        point_value = PointValue.objects.get(key=key)
-    except PointValue.DoesNotExist:
-        raise ImproperlyConfigured("PointValue for '%s' does not exist" % key)
+    point_value = None
+    points = None
+    if isinstance(key, (str, unicode)):
+        try:
+            point_value = PointValue.objects.get(key=key)
+            points = point_value.value
+        except PointValue.DoesNotExist:
+            raise ImproperlyConfigured("PointValue for '%s' does not exist" % key)
+    elif isinstance(key, int):
+        points = key
     else:
-        points_given = point_value.value
+        raise ImproperlyConfigured("award_points didn't receive a valid value"
+            " for it's 2nd argument.  It must be either a string that matches a"
+            " PointValue or an integer amount of points to award."
+        )
     
-    apv = AwardedPointValue(value=point_value)
+    apv = AwardedPointValue(points=points, value=point_value)
     if isinstance(target, User):
         apv.target_user = target
         lookup_params = {
@@ -138,23 +152,30 @@ def award_points(target, key):
         }
     apv.save()
     
-    if not TargetStat.update_points(points_given, lookup_params):
+    if not TargetStat.update_points(points, lookup_params):
         try:
             sid = transaction.savepoint()
             TargetStat._default_manager.create(
-                **dict(lookup_params, points=points_given)
+                **dict(lookup_params, points=points)
             )
             transaction.savepoint_commit(sid)
         except IntegrityError:
             transaction.savepoint_rollback(sid)
-            TargetStat.update_points(points_given, lookup_params)
+            TargetStat.update_points(points, lookup_params)
     
-    signals.points_awarded.send(sender=target.__class__, target=target, key=key)
+    signals.points_awarded.send(
+        sender=target.__class__,
+        target=target,
+        key=key,
+        points=points
+    )
     
     new_points = points_awarded(target)
-    old_points = new_points - points_given
+    old_points = new_points - points
     
     TargetStat.update_positions((old_points, new_points))
+    
+    return apv
 
 
 def points_awarded(target):

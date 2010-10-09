@@ -7,7 +7,7 @@ from django.test import TestCase, TransactionTestCase
 
 from django.contrib.auth.models import User, Group
 
-from agon.models import TargetStat, PointValue
+from agon.models import TargetStat, PointValue, AwardedPointValue
 from agon.models import award_points, points_awarded
 
 
@@ -38,13 +38,24 @@ class BasePointsTestCase(object):
 
 class PointsTestCase(BasePointsTestCase, TestCase):
     
-    def test_improperly_configured(self):
+    def test_improperly_configured_point_value(self):
         self.setup_users(1)
         user = self.users[0]
         try:
             award_points(user, "JOINED_SITE")
         except ImproperlyConfigured, e:
             self.assertEqual(str(e), "PointValue for 'JOINED_SITE' does not exist")
+    
+    def test_improperly_configured(self):
+        self.setup_users(1)
+        user = self.users[0]
+        try:
+            award_points(user, True)
+        except ImproperlyConfigured, e:
+            self.assertEqual(str(e), "award_points didn't receive a valid value"
+                " for it's 2nd argument.  It must be either a string that matches a"
+                " PointValue or an integer amount of points to award."
+            )
     
     def test_simple_user_point_award(self):
         self.setup_users(1)
@@ -62,6 +73,74 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         group = Group.objects.create(name="Dwarfs")
         award_points(group, "ATE_SOMETHING")
         self.assertEqual(points_awarded(group), 5)
+    
+    def test_user_one_off_point_award(self):
+        self.setup_users(1)
+        user = self.users[0]
+        award_points(user, 500)
+        self.assertEqual(points_awarded(user), 500)
+
+    def test_generic_one_off_point_award(self):
+        group = Group.objects.create(name="Dwarfs")
+        award_points(group, 500)
+        self.assertEqual(points_awarded(group), 500)
+    
+    def test_user_one_off_point_award_value_is_null(self):
+        self.setup_users(1)
+        user = self.users[0]
+        award_points(user, 500)
+        apv = AwardedPointValue.objects.all()[0]
+        self.assertTrue(apv.value is None)
+
+    def test_generic_one_off_point_award_value_is_null(self):
+        group = Group.objects.create(name="Dwarfs")
+        award_points(group, 500)
+        apv = AwardedPointValue.objects.all()[0]
+        self.assertTrue(apv.value is None)
+
+    def test_unicode_simple_user_point_award(self):
+        self.setup_users(1)
+        self.setup_points({
+            "JOINED_SITE": 1,
+        })
+        user = self.users[0]
+        award_points(user, "JOINED_SITE")
+        apv = AwardedPointValue.objects.all()[0]
+        self.assertEqual(
+            unicode(apv),
+            u"%s points for %s awarded to %s" % (1, "JOINED_SITE", unicode(user))
+        )
+    
+    def test_unicode_simple_generic_point_award(self):
+        self.setup_points({
+            "ATE_SOMETHING": 5,
+        })
+        group = Group.objects.create(name="Dwarfs")
+        award_points(group, "ATE_SOMETHING")
+        apv = AwardedPointValue.objects.all()[0]
+        self.assertEqual(
+            unicode(apv),
+            u"%s points for %s awarded to %s" % (5, "ATE_SOMETHING", unicode(group))
+        )
+    
+    def test_unicode_user_one_off_point_award(self):
+        self.setup_users(1)
+        user = self.users[0]
+        award_points(user, 500)
+        apv = AwardedPointValue.objects.all()[0]
+        self.assertEqual(
+            unicode(apv),
+            u"%s points awarded to %s" % (500, unicode(user))
+        )
+    
+    def test_unicode_generic_one_off_point_award(self):
+        group = Group.objects.create(name="Dwarfs")
+        award_points(group, 500)
+        apv = AwardedPointValue.objects.all()[0]
+        self.assertEqual(
+            unicode(apv),
+            u"%s points awarded to %s" % (500, unicode(group))
+        )
 
 
 class PointsTransactionTestCase(BasePointsTestCase, TransactionTestCase):
