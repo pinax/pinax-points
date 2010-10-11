@@ -36,10 +36,15 @@ class AwardedPointValue(models.Model):
     """
     
     # object association (User is special-cased as it's a common case)
-    target_user = models.ForeignKey(User, null=True)
-    target_content_type = models.ForeignKey(ContentType, null=True)
+    target_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_targets")
+    
+    target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets")
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
+    
+    source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")
+    source_object_id = models.IntegerField(null=True)
+    source_object = generic.GenericForeignKey("source_content_type", "source_object_id")
     
     value = models.ForeignKey(PointValue)
     timestamp = models.DateTimeField(default=datetime.datetime.now)
@@ -47,7 +52,11 @@ class AwardedPointValue(models.Model):
     @property
     def target(self):
         return self.target_user or self.target_object
-                
+
+    @property
+    def source(self):
+        return self.source_object
+    
     def __unicode__(self):
         return u"%s awarded to %s" % (self.value, self.target)
 
@@ -59,17 +68,27 @@ class TargetStat(models.Model):
     """
     
     # object association (User is special-cased as it's a common case)
-    target_user = models.OneToOneField(User, null=True)
-    target_content_type = models.ForeignKey(ContentType, null=True)
+    target_user = models.OneToOneField(User, null=True, related_name="targetstat_targets")
+    
+    target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets")
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
+    
+    source_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_sources")
+    source_object_id = models.IntegerField(null=True)
+    source_object = generic.GenericForeignKey("source_content_type", "source_object_id")
     
     points = models.IntegerField(default=0)
     position = models.PositiveIntegerField(null=True)
     level = models.PositiveIntegerField(default=1)
     
     class Meta:
-        unique_together = [("target_content_type", "target_object_id")]
+        unique_together = [(
+            "target_content_type",
+            "target_object_id",
+            "source_content_type",
+            "source_object_id"
+        )]
     
     @classmethod
     def update_points(cls, given, lookup_params):
@@ -112,9 +131,16 @@ class TargetStat(models.Model):
             return self.target_user
         else:
             return self.target_object
+    
+    @property
+    def source(self):
+        """
+        Match the ``target`` abstraction so the interface is consistent.
+        """
+        return self.source_object
 
 
-def award_points(target, key):
+def award_points(target, key, source=None):
     """
     Awards target the point value for key
     """
@@ -137,6 +163,13 @@ def award_points(target, key):
             "target_content_type": apv.target_content_type,
             "target_object_id": apv.target_object_id,
         }
+    if source is not None:
+        apv.source_object = source
+        
+    lookup_params.update({
+        "source_content_type": apv.source_content_type,
+        "source_object_id": apv.source_object_id
+    })
     apv.save()
     
     if not TargetStat.update_points(points_given, lookup_params):
@@ -150,25 +183,48 @@ def award_points(target, key):
             transaction.savepoint_rollback(sid)
             TargetStat.update_points(points_given, lookup_params)
     
-    signals.points_awarded.send(sender=target.__class__, target=target, key=key)
+    signals.points_awarded.send(
+        sender=target.__class__,
+        target=target,
+        key=key,
+        source=source
+    )
     
-    new_points = points_awarded(target)
+    new_points = points_awarded(target, source=source)
     old_points = new_points - points_given
     
     TargetStat.update_positions((old_points, new_points))
 
 
-def points_awarded(target):
-    if isinstance(target, User):
-        lookup_params = {
-            "target_user": target,
-        }
-    else:
-        lookup_params = {
-            "target_content_type": ContentType.objects.get_for_model(target),
-            "target_object_id": target.pk,
-        }
+def points_awarded(target=None, source=None):
+    """
+    Lookup points awarded either by target, by source, or by both
+    """
+    
+    if target is None and source is None:
+        return 0
+    
+    lookup_params = {}
+    
+    if target is not None:
+        if isinstance(target, User):
+            lookup_params.update({
+                "target_user": target,
+            })
+        else:
+            lookup_params.update({
+                "target_content_type": ContentType.objects.get_for_model(target),
+                "target_object_id": target.pk,
+            })
+    
+    if source is not None:
+        lookup_params.update({
+            "source_content_type": ContentType.objects.get_for_model(source),
+            "source_object_id": source.pk
+        })
+    
     try:
-        return TargetStat.objects.get(**lookup_params).points
+        return TargetStat.objects.filter(**lookup_params).aggregate(models.Sum("points"))["points__sum"] or 0
     except TargetStat.DoesNotExist:
         return 0
+
