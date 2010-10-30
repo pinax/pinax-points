@@ -79,7 +79,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         user = self.users[0]
         award_points(user, 500)
         self.assertEqual(points_awarded(user), 500)
-
+    
     def test_generic_one_off_point_award(self):
         group = Group.objects.create(name="Dwarfs")
         award_points(group, 500)
@@ -91,13 +91,13 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         award_points(user, 500)
         apv = AwardedPointValue.objects.all()[0]
         self.assertTrue(apv.value is None)
-
+    
     def test_generic_one_off_point_award_value_is_null(self):
         group = Group.objects.create(name="Dwarfs")
         award_points(group, 500)
         apv = AwardedPointValue.objects.all()[0]
         self.assertTrue(apv.value is None)
-
+    
     def test_unicode_simple_user_point_award(self):
         self.setup_users(1)
         self.setup_points({
@@ -141,6 +141,17 @@ class PointsTestCase(BasePointsTestCase, TestCase):
             unicode(apv),
             u"%s points awarded to %s" % (500, unicode(group))
         )
+    
+    def test_simple_generic_point_award_with_source(self):
+        self.setup_points({
+            "ATE_SOMETHING": 5,
+        })
+        dwarfs = Group.objects.create(name="Dwarfs")
+        elves = Group.objects.create(name="Elves")
+        award_points(dwarfs, "ATE_SOMETHING", source=elves)
+        award_points(dwarfs, "ATE_SOMETHING")
+        self.assertEqual(points_awarded(dwarfs), 10)
+        self.assertEqual(points_awarded(dwarfs, source=elves), 5)
 
 
 class PointsTransactionTestCase(BasePointsTestCase, TransactionTestCase):
@@ -186,6 +197,25 @@ class PositionsTestCase(BasePointsTestCase, TestCase):
             [(1, 100), (2, 90), (3, 85), (4, 70), (4, 70), (6, 60), (7, 50), (8, 10), (9, 5)]
         )
     
+    def test_no_args_with_target_objects(self):
+        self.setup_points({
+            "ATE_SOMETHING": 5,
+            "DRANK_SOMETHING": 10,
+            "WENT_TO_SLEEP": 4
+        })
+        points = PointValue.objects.all()
+        
+        TargetStat.objects.create(target_object=points[0], points=100)
+        TargetStat.objects.create(target_object=points[1], points=90)
+        TargetStat.objects.create(target_object=points[2], points=90)
+        
+        TargetStat.update_positions()
+        
+        self.assertEqual(
+            [(p.position, p.points) for p in TargetStat.objects.order_by("position")],
+            [(1, 100), (2, 90), (2, 90)]
+        )
+    
     def test_up_range(self):
         self.setup_users(9)
         
@@ -207,6 +237,25 @@ class PositionsTestCase(BasePointsTestCase, TestCase):
             [(1, 100), (2, 90), (3, 85), (4, 70), (4, 70), (6, 61), (7, 60), (8, 10), (9, 5)]
         )
     
+    def test_up_range_with_target_objects(self):
+        self.setup_points({
+            "ATE_SOMETHING": 5,
+            "DRANK_SOMETHING": 10,
+            "WENT_TO_SLEEP": 4
+        })
+        points = PointValue.objects.all()
+        
+        TargetStat.objects.create(target_object=points[0], points=100, position=1)
+        TargetStat.objects.create(target_object=points[1], points=90, position=2)
+        TargetStat.objects.create(target_object=points[2], points=95, position=3)
+        
+        TargetStat.update_positions((90, 95))
+        
+        self.assertEqual(
+            [(p.position, p.points) for p in TargetStat.objects.order_by("position")],
+            [(1, 100), (2, 95), (3, 90)]
+        )
+    
     def test_down_range(self):
         self.setup_users(9)
         
@@ -226,6 +275,40 @@ class PositionsTestCase(BasePointsTestCase, TestCase):
         self.assertEqual(
             [(p.position, p.points) for p in TargetStat.objects.order_by("position")],
             [(1, 100), (2, 90), (3, 70), (3, 70), (5, 69), (6, 60), (7, 50), (8, 10), (9, 5)]
+        )
+    
+    def test_down_range_with_target_objects(self):
+        self.setup_points({
+            "ATE_SOMETHING": 5,
+            "DRANK_SOMETHING": 10,
+            "WENT_TO_SLEEP": 4
+        })
+        points = PointValue.objects.all()
+        
+        TargetStat.objects.create(target_object=points[0], points=100, position=1)
+        TargetStat.objects.create(target_object=points[1], points=90, position=2)
+        TargetStat.objects.create(target_object=points[2], points=95, position=3)
+        
+        TargetStat.update_positions((95, 90))
+        
+        self.assertEqual(
+            [(p.position, p.points) for p in TargetStat.objects.order_by("position")],
+            [(1, 100), (2, 95), (3, 90)]
+        )
+
+
+class TargetObjectsTestCase(BasePointsTestCase, TestCase):
+    
+    def test_exception_assiging_object_to_user(self):
+        self.setup_points({
+            "ATE_SOMETHING": 5,
+            "DRANK_SOMETHING": 10
+        })
+        points = PointValue.objects.all()
+        
+        self.assertRaises(
+            ValueError,
+            lambda: TargetStat.objects.create(target_user=points[0], points=100)
         )
 
 
