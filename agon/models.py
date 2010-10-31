@@ -207,7 +207,7 @@ def award_points(target, key, source=None):
 
 def points_awarded(target):
     """
-    Lookup points awarded either by target, by source, or by both
+    Determine out how many points the given target has recieved.
     """
     
     if isinstance(target, User):
