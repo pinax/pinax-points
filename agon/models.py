@@ -205,26 +205,20 @@ def award_points(target, key, source=None):
     return apv
 
 
-def points_awarded(target=None):
+def points_awarded(target):
     """
     Lookup points awarded either by target, by source, or by both
     """
     
-    if target is None:
-        return 0
-    
-    lookup_params = {}
-    
-    if target is not None:
-        if isinstance(target, User):
-            lookup_params.update({
-                "target_user": target,
-            })
-        else:
-            lookup_params.update({
-                "target_content_type": ContentType.objects.get_for_model(target),
-                "target_object_id": target.pk,
-            })
+    if isinstance(target, User):
+        lookup_params.update({
+            "target_user": target,
+        })
+    else:
+        lookup_params.update({
+            "target_content_type": ContentType.objects.get_for_model(target),
+            "target_object_id": target.pk,
+        })
     
     try:
         return TargetStat.objects.get(**lookup_params).points
