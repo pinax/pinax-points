@@ -151,6 +151,7 @@ def award_points(target, key, source=None):
     """
     point_value = None
     points = None
+    
     if isinstance(key, (str, unicode)):
         try:
             point_value = PointValue.objects.get(key=key)
@@ -161,8 +162,8 @@ def award_points(target, key, source=None):
         points = key
     else:
         raise ImproperlyConfigured("award_points didn't receive a valid value"
-            " for it's 2nd argument.  It must be either a string that matches a"
-            " PointValue or an integer amount of points to award."
+            " for its second argument. It must be either a string that matches "
+            " a PointValue or an integer amount of points to award."
         )
     
     apv = AwardedPointValue(points=points, value=point_value)
@@ -177,9 +178,10 @@ def award_points(target, key, source=None):
             "target_content_type": apv.target_content_type,
             "target_object_id": apv.target_object_id,
         }
+    
     if source is not None:
         apv.source_object = source
-        
+    
     lookup_params.update({
         "source_content_type": apv.source_content_type,
         "source_object_id": apv.source_object_id
@@ -244,4 +246,3 @@ def points_awarded(target=None, source=None):
         return TargetStat.objects.filter(**lookup_params).aggregate(models.Sum("points"))["points__sum"] or 0
     except TargetStat.DoesNotExist:
         return 0
-
