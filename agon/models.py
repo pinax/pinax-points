@@ -211,14 +211,14 @@ def points_awarded(target):
     """
     
     if isinstance(target, User):
-        lookup_params.update({
+        lookup_params = {
             "target_user": target,
-        })
+        }
     else:
-        lookup_params.update({
+        lookup_params = {
             "target_content_type": ContentType.objects.get_for_model(target),
             "target_object_id": target.pk,
-        })
+        }
     
     try:
         return TargetStat.objects.get(**lookup_params).points
