@@ -78,10 +78,6 @@ class TargetStat(models.Model):
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
     
-    source_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_sources")
-    source_object_id = models.IntegerField(null=True)
-    source_object = generic.GenericForeignKey("source_content_type", "source_object_id")
-    
     points = models.IntegerField(default=0)
     position = models.PositiveIntegerField(null=True)
     level = models.PositiveIntegerField(default=1)
@@ -90,8 +86,6 @@ class TargetStat(models.Model):
         unique_together = [(
             "target_content_type",
             "target_object_id",
-            "source_content_type",
-            "source_object_id"
         )]
     
     @classmethod
@@ -182,10 +176,6 @@ def award_points(target, key, source=None):
     if source is not None:
         apv.source_object = source
     
-    lookup_params.update({
-        "source_content_type": apv.source_content_type,
-        "source_object_id": apv.source_object_id
-    })
     apv.save()
     
     if not TargetStat.update_points(points, lookup_params):
@@ -207,7 +197,7 @@ def award_points(target, key, source=None):
         source=source
     )
     
-    new_points = points_awarded(target, source=source)
+    new_points = points_awarded(target)
     old_points = new_points - points
     
     TargetStat.update_positions((old_points, new_points))
@@ -215,12 +205,12 @@ def award_points(target, key, source=None):
     return apv
 
 
-def points_awarded(target=None, source=None):
+def points_awarded(target=None):
     """
     Lookup points awarded either by target, by source, or by both
     """
     
-    if target is None and source is None:
+    if target is None:
         return 0
     
     lookup_params = {}
@@ -236,13 +226,7 @@ def points_awarded(target=None, source=None):
                 "target_object_id": target.pk,
             })
     
-    if source is not None:
-        lookup_params.update({
-            "source_content_type": ContentType.objects.get_for_model(source),
-            "source_object_id": source.pk
-        })
-    
     try:
-        return TargetStat.objects.filter(**lookup_params).aggregate(models.Sum("points"))["points__sum"] or 0
+        return TargetStat.objects.get(**lookup_params).points
     except TargetStat.DoesNotExist:
         return 0

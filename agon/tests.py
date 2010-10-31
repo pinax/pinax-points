@@ -141,17 +141,6 @@ class PointsTestCase(BasePointsTestCase, TestCase):
             unicode(apv),
             u"%s points awarded to %s" % (500, unicode(group))
         )
-    
-    def test_simple_generic_point_award_with_source(self):
-        self.setup_points({
-            "ATE_SOMETHING": 5,
-        })
-        dwarfs = Group.objects.create(name="Dwarfs")
-        elves = Group.objects.create(name="Elves")
-        award_points(dwarfs, "ATE_SOMETHING", source=elves)
-        award_points(dwarfs, "ATE_SOMETHING")
-        self.assertEqual(points_awarded(dwarfs), 10)
-        self.assertEqual(points_awarded(dwarfs, source=elves), 5)
 
 
 class PointsTransactionTestCase(BasePointsTestCase, TransactionTestCase):
