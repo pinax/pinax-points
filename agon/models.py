@@ -1,7 +1,6 @@
 import datetime
 import itertools
 
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction, IntegrityError
 
@@ -36,20 +35,34 @@ class AwardedPointValue(models.Model):
     """
     
     # object association (User is special-cased as it's a common case)
-    target_user = models.ForeignKey(User, null=True)
-    target_content_type = models.ForeignKey(ContentType, null=True)
+    target_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_targets")
+    
+    target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets")
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
     
-    value = models.ForeignKey(PointValue)
+    value = models.ForeignKey(PointValue, null=True)
+    points = models.IntegerField()
+    
+    source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")
+    source_object_id = models.IntegerField(null=True)
+    source_object = generic.GenericForeignKey("source_content_type", "source_object_id")
+    
     timestamp = models.DateTimeField(default=datetime.datetime.now)
     
     @property
     def target(self):
         return self.target_user or self.target_object
-                
+
+    @property
+    def source(self):
+        return self.source_object
+    
     def __unicode__(self):
-        return u"%s awarded to %s" % (self.value, self.target)
+        val = self.value
+        if self.value is None:
+            val = "%s points" % self.points
+        return u"%s awarded to %s" % (val, self.target)
 
 
 class TargetStat(models.Model):
@@ -59,8 +72,9 @@ class TargetStat(models.Model):
     """
     
     # object association (User is special-cased as it's a common case)
-    target_user = models.OneToOneField(User, null=True)
-    target_content_type = models.ForeignKey(ContentType, null=True)
+    target_user = models.OneToOneField(User, null=True, related_name="targetstat_targets")
+    
+    target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets")
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
     
@@ -69,7 +83,10 @@ class TargetStat(models.Model):
     level = models.PositiveIntegerField(default=1)
     
     class Meta:
-        unique_together = [("target_content_type", "target_object_id")]
+        unique_together = [(
+            "target_content_type",
+            "target_object_id",
+        )]
     
     @classmethod
     def update_points(cls, given, lookup_params):
@@ -112,20 +129,38 @@ class TargetStat(models.Model):
             return self.target_user
         else:
             return self.target_object
-
-
-def award_points(target, key):
-    """
-    Awards target the point value for key
-    """
-    try:
-        point_value = PointValue.objects.get(key=key)
-    except PointValue.DoesNotExist:
-        raise ImproperlyConfigured("PointValue for '%s' does not exist" % key)
-    else:
-        points_given = point_value.value
     
-    apv = AwardedPointValue(value=point_value)
+    @property
+    def source(self):
+        """
+        Match the ``target`` abstraction so the interface is consistent.
+        """
+        return self.source_object
+
+
+def award_points(target, key, source=None):
+    """
+    Awards target the point value for key.  If key is an integer then it's a
+    one off assignment and should be interpreted as the actual point value.
+    """
+    point_value = None
+    points = None
+    
+    if isinstance(key, (str, unicode)):
+        try:
+            point_value = PointValue.objects.get(key=key)
+            points = point_value.value
+        except PointValue.DoesNotExist:
+            raise ImproperlyConfigured("PointValue for '%s' does not exist" % key)
+    elif isinstance(key, int):
+        points = key
+    else:
+        raise ImproperlyConfigured("award_points didn't receive a valid value"
+            " for its second argument. It must be either a string that matches "
+            " a PointValue or an integer amount of points to award."
+        )
+    
+    apv = AwardedPointValue(points=points, value=point_value)
     if isinstance(target, User):
         apv.target_user = target
         lookup_params = {
@@ -137,28 +172,44 @@ def award_points(target, key):
             "target_content_type": apv.target_content_type,
             "target_object_id": apv.target_object_id,
         }
+    
+    if source is not None:
+        apv.source_object = source
+    
     apv.save()
     
-    if not TargetStat.update_points(points_given, lookup_params):
+    if not TargetStat.update_points(points, lookup_params):
         try:
             sid = transaction.savepoint()
             TargetStat._default_manager.create(
-                **dict(lookup_params, points=points_given)
+                **dict(lookup_params, points=points)
             )
             transaction.savepoint_commit(sid)
-        except IntegrityError, e:
+        except IntegrityError:
             transaction.savepoint_rollback(sid)
-            TargetStat.update_points(points_given, lookup_params)
+            TargetStat.update_points(points, lookup_params)
     
-    signals.points_awarded.send(sender=target.__class__, target=target, key=key)
+    signals.points_awarded.send(
+        sender=target.__class__,
+        target=target,
+        key=key,
+        points=points,
+        source=source
+    )
     
     new_points = points_awarded(target)
-    old_points = new_points - points_given
+    old_points = new_points - points
     
     TargetStat.update_positions((old_points, new_points))
+    
+    return apv
 
 
 def points_awarded(target):
+    """
+    Determine out how many points the given target has recieved.
+    """
+    
     if isinstance(target, User):
         lookup_params = {
             "target_user": target,
@@ -168,6 +219,7 @@ def points_awarded(target):
             "target_content_type": ContentType.objects.get_for_model(target),
             "target_object_id": target.pk,
         }
+    
     try:
         return TargetStat.objects.get(**lookup_params).points
     except TargetStat.DoesNotExist:
