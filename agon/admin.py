@@ -14,7 +14,13 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             return obj.target_object
     
     def reason(self, obj):
-        return obj.value.key
+        if obj.value_id:
+            return obj.value.key
+        else:
+            if obj.reason:
+                return obj.reason
+            else:
+                return None
 
 
 admin.site.register(AwardedPointValue, AwardedPointValueAdmin)

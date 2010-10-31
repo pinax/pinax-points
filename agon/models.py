@@ -42,6 +42,8 @@ class AwardedPointValue(models.Model):
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
     
     value = models.ForeignKey(PointValue, null=True)
+    
+    reason = models.CharField(max_length=140)
     points = models.IntegerField()
     
     source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")
