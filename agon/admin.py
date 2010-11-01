@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.utils.functional import update_wrapper
 
@@ -53,6 +53,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             form = OneOffPointAwardForm(request.POST)
             if form.is_valid():
                 form.award()
+                return redirect("admin:agon_awardedpointvalue_changelist")
         else:
             form = OneOffPointAwardForm()
         form = helpers.AdminForm(
@@ -62,6 +63,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             model_admin=self
         )
         ctx = {
+            "opts": self.model._meta,
             "form": form,
         }
         ctx = RequestContext(request, ctx)
