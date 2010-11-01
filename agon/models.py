@@ -140,7 +140,7 @@ class TargetStat(models.Model):
         return self.source_object
 
 
-def award_points(target, key, source=None):
+def award_points(target, key, reason="", source=None):
     """
     Awards target the point value for key.  If key is an integer then it's a
     one off assignment and should be interpreted as the actual point value.
@@ -162,7 +162,7 @@ def award_points(target, key, source=None):
             " a PointValue or an integer amount of points to award."
         )
     
-    apv = AwardedPointValue(points=points, value=point_value)
+    apv = AwardedPointValue(points=points, value=point_value, reason=reason)
     if isinstance(target, User):
         apv.target_user = target
         lookup_params = {

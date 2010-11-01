@@ -8,6 +8,10 @@ from agon.models import award_points
 class OneOffPointAwardForm(forms.Form):
     user = forms.ModelChoiceField(User.objects.filter(is_active=True))
     points = forms.IntegerField()
+    reason = forms.CharField(max_length=140)
     
     def award(self):
-        award_points(self.cleaned_data["user"], self.cleaned_data["points"])
+        user = self.cleaned_data["user"]
+        points = self.cleaned_data["points"]
+        reason = self.cleaned_data["reason"]
+        award_points(user, points, reason=reason)
