@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name = "agon",
-    version = "0.1.dev10",
+    version = "0.1.dev12",
     author = "Eldarion",
     author_email = "development@eldarion.com",
     description = "a reusable Django points, positions and levels application",
@@ -14,6 +14,12 @@ setup(
         "agon",
         "agon.templatetags",
     ],
+    package_data = {
+        "agon": [
+            "templates/agon/*.html",
+            "templates/admin/agon/awardedpointvalue/*.html",
+        ]
+    },
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
