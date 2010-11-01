@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+
+{% load admin_modify adminmedia %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Issue one-off point rewards</h1>
+    
+    <form method="POST" action="">
+        {% csrf_token %}
+        {% for fieldset in form %}
+            {% include "admin/includes/fieldset.html" %}
+        {% endfor %}
+        
+        <div class="submit-row">
+            <input type="submit" value="Award" class="default" />
+        </div>
+    </form>
+</div>
+{% endblock %}
