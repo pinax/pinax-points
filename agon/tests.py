@@ -1,3 +1,4 @@
+from datetime import timedelta
 from threading import Thread
 
 from django.conf import settings
@@ -332,4 +333,51 @@ class TopObjectsTagTestCase(TestCase):
             self.assertEqual(str(e), "'auth.U' does not result in a model. Is it correct?")
 
 
-
+class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
+    """
+    points_for_object
+    """
+    
+    def test_no_args(self):
+        try:
+            Template("{% load agon_tags %}{% points_for_object %}")
+        except TemplateSyntaxError, e:
+            self.assertEqual(str(e), "'points_for_object' takes 1, 3, or 6 arguments.")
+    
+    def test_type_as(self):
+        try:
+            self.setup_users(1)
+            t = Template('{% load agon_tags %}{% points_for_object user a points %}')
+            t.render(Context({"user": self.users[0]}))
+        except TemplateSyntaxError, e:
+            self.assertEqual(str(e), "Second argument to 'points_for_object' should be 'as'")
+    
+    def test_user_object_without_as(self):
+        self.setup_users(1)
+        award_points(self.users[0], 15)
+        t = Template('{% load agon_tags %}{% points_for_object user %} Points')
+        self.assertEqual(t.render(Context({"user": self.users[0]})), "15 Points")
+    
+    def test_user_object_with_as(self):
+        self.setup_users(1)
+        award_points(self.users[0], 10)
+        t = Template('{% load agon_tags %}{% points_for_object user as points %}{{ points }} Points')
+        self.assertEqual(t.render(Context({"user": self.users[0]})), "10 Points")
+    
+    def test_user_object_with_limit(self):
+        self.setup_users(1)
+        ap = award_points(self.users[0], 10)
+        ap.timestamp = ap.timestamp - timedelta(days=14)
+        ap.save()
+        award_points(self.users[0], 18)
+        t = Template('{% load agon_tags %}{% points_for_object user limit 7 days as points %}{{ points }} Points')
+        self.assertEqual(t.render(Context({"user": self.users[0]})), "18 Points")
+    
+    def test_user_object_with_limit_30_days(self):
+        self.setup_users(1)
+        ap = award_points(self.users[0], 10)
+        ap.timestamp = ap.timestamp - timedelta(days=14)
+        ap.save()
+        award_points(self.users[0], 18)
+        t = Template('{% load agon_tags %}{% points_for_object user limit 30 days as points %}{{ points }} Points')
+        self.assertEqual(t.render(Context({"user": self.users[0]})), "28 Points")

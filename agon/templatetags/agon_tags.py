@@ -93,30 +93,52 @@ def top_objects(parser, token):
 
 
 class PointsForObjectNode(template.Node):
+    
     @classmethod
     def handle_token(cls, parser, token):
         bits = token.split_contents()
         if len(bits) == 2:
             return cls(bits[1])
-        elif len(bits) == 4 or len(bits) == 7:
+        elif len(bits) == 4:
             # len(bits) == 7 will support interval timeframing
             if bits[2] != "as":
-                raise template.TemplateSyntaxError("Second argument to %r "
+                raise template.TemplateSyntaxError("Second argument to '%s' "
                     "should be 'as'" % bits[0])
-            return cls(bits[1], bits[3])
-        raise template.TemplateSyntaxError("%r takes 1 or 3 arguments." % bits[0])
+            return cls(bits[1], context_var=bits[3])
+        elif len(bits) == 7:
+            if bits[2] != "limit" and bits[5] != "as":
+                raise template.TemplateSyntaxError("Second argument to '%s' "
+                    "should be 'as' and fifth argument should be 'limit" % bits[0])
+            return cls(
+                bits[1],
+                limit_num=bits[3],
+                limit_unit=bits[4],
+                context_var=bits[6]
+            )
+        raise template.TemplateSyntaxError("'%s' takes 1, 3, or 6 arguments." % bits[0])
     
-    def __init__(self, obj, context_var=None):
+    def __init__(self, obj, context_var=None, limit_num=None, limit_unit=None):
         self.obj = template.Variable(obj)
         self.context_var = context_var
+        self.limit_num = limit_num
+        self.limit_unit = limit_unit
     
     def render(self, context):
         obj = self.obj.resolve(context)
-        points = points_awarded(obj)
+        
+        since = None
+        if self.limit_num is not None and self.limit_unit is not None:
+            since = datetime.datetime.now() - datetime.timedelta(
+                **{self.limit_unit: int(self.limit_num)}
+            )
+        
+        points = points_awarded(obj, since=since)
+        
         if self.context_var is not None:
             context[self.context_var] = points
             return ""
         return unicode(points)
+
 
 @register.tag
 def points_for_object(parser, token):
@@ -128,5 +150,9 @@ def points_for_object(parser, token):
     or
         
         {% points_for_object user as points %}
+    
+    or
+        
+        {% points_for_object user limit 7 days as points %}
     """
     return PointsForObjectNode.handle_token(parser, token)

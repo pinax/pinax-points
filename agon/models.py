@@ -207,7 +207,7 @@ def award_points(target, key, reason="", source=None):
     return apv
 
 
-def points_awarded(target):
+def points_awarded(target, since=None):
     """
     Determine out how many points the given target has recieved.
     """
@@ -222,7 +222,14 @@ def points_awarded(target):
             "target_object_id": target.pk,
         }
     
-    try:
-        return TargetStat.objects.get(**lookup_params).points
-    except TargetStat.DoesNotExist:
-        return 0
+    if since is None:
+        try:
+            return TargetStat.objects.get(**lookup_params).points
+        except TargetStat.DoesNotExist:
+            return 0
+    else:
+        return AwardedPointValue.objects.filter(
+            **lookup_params
+        ).filter(
+            timestamp__gte=since
+        ).aggregate(models.Sum("points")).get("points__sum", 0)
