@@ -1,12 +1,9 @@
 import datetime
 
 from django import template
-from django.db.models import Sum
 from django.db.models.loading import cache as app_cache
 
-from django.contrib.auth.models import User
-
-from agon.models import points_awarded
+from agon.models import points_awarded, get_top_objects
 
 
 register = template.Library()
@@ -91,35 +88,15 @@ class TopObjectsNode(template.Node):
             if model is None:
                 raise incorrect_value
         
-        queryset = model.objects.all()
-        
-        if self.time_limit is None:
-            if issubclass(model, User):
-                queryset = queryset.annotate(
-                    num_points=Sum("targetstat_targets__points")
-                )
-            else:
-                raise NotImplementedError("Only auth.User is supported at this time.")
-        else:
-            since = datetime.datetime.now() - self.time_limit
-            if issubclass(model, User):
-                queryset = queryset.filter(
-                    awardedpointvalue_targets__timestamp__gte=since
-                ).annotate(
-                    num_points=Sum("awardedpointvalue_targets__points")
-                )
-            else:
-                raise NotImplementedError("Only auth.User is supported at this time.")
-        
-        queryset = queryset.filter(
-            num_points__isnull=False
-        ).order_by("-num_points")
-        
         if self.limit is not None:
             limit = self.limit.resolve(context)
-            queryset = queryset[:limit]
         
-        context[self.context_var] = queryset
+        context[self.context_var] = get_top_objects(
+            model,
+            limit,
+            self.time_limit
+        )
+        
         return u""
 
 
