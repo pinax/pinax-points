@@ -3,7 +3,6 @@ import datetime
 from django import template
 from django.db.models import Sum
 from django.db.models.loading import cache as app_cache
-from django.utils.datastructures import SortedDict
 
 from django.contrib.auth.models import User
 
@@ -96,13 +95,11 @@ class TopObjectsNode(template.Node):
         
         if self.time_limit is None:
             if issubclass(model, User):
-                queryset = queryset.annotate(num_points=Sum("targetstat_targets__points"))
-            else:
-                queryset = queryset.extra(
-                    select = SortedDict([
-                        ("num_points", "SELECT NULL")
-                    ])
+                queryset = queryset.annotate(
+                    num_points=Sum("targetstat_targets__points")
                 )
+            else:
+                raise NotImplementedError("Only auth.User is supported at this time.")
         else:
             since = datetime.datetime.now() - self.time_limit
             if issubclass(model, User):
@@ -112,11 +109,7 @@ class TopObjectsNode(template.Node):
                     num_points=Sum("awardedpointvalue_targets__points")
                 )
             else:
-                queryset = queryset.extra(
-                    select = SortedDict([
-                        ("num_points", "SELECT NULL")
-                    ])
-                )
+                raise NotImplementedError("Only auth.User is supported at this time.")
         
         queryset = queryset.order_by("-num_points")
         if self.limit is not None:
