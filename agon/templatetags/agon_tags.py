@@ -39,7 +39,7 @@ class TopObjectsNode(template.Node):
             )
         
         if len(bits) == 6 or len(bits) == 9:
-            if "limit" not in [bits[4], bits[7]]:
+            if "limit" != bits[4] and (len(bits) == 9 and "limit" == bits[7]):
                 raise template.TemplateSyntaxError(
                     "4th or 7th argument to %r must be 'limit'" % bits[0]
                 )

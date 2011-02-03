@@ -358,6 +358,12 @@ class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
         t.render(c)
         self.assertEquals(c["top_users"].model, User.objects.all().model)
     
+    def test_should_return_annotated_queryset_with_limit(self):
+        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users limit 3 %}""")
+        c = Context({})
+        t.render(c)
+        self.assertEquals(c["top_users"].model, User.objects.all().model)
+    
     def test_should_return_annotated_queryset_non_user_model(self):
         t = Template("""{% load agon_tags %}{% top_objects "auth.Group" as top_users %}""")
         c = Context({})
