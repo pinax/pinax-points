@@ -1,12 +1,13 @@
 import datetime
 
 from django import template
+from django.db.models import Sum
 from django.db.models.loading import cache as app_cache
+from django.utils.datastructures import SortedDict
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 
-from agon.models import TargetStat, points_awarded
+from agon.models import points_awarded
 
 
 register = template.Library()
@@ -17,41 +18,72 @@ class TopObjectsNode(template.Node):
     @classmethod
     def handle_token(cls, parser, token):
         bits = token.split_contents()
+        time_unit = None
+        time_num = None
+        limit = None
         
-        if len(bits) != 4 and len(bits) != 6:
-            raise template.TemplateSyntaxError("%r takes exactly three or six "
-                "arguments (second argument must be 'as')" % str(bits[0]))
+        if len(bits) not in [4, 6, 7, 9]:
+            """
+            4: No optional params
+            6: limit N
+            7: timeframe N UNITS
+            9: limit N timeframe N UNITS --or-- timeframe N UNITS limit N
+            """
+            raise template.TemplateSyntaxError(
+                "%r takes exactly three, five, six, or eight arguments (second"
+                " argument must be 'as')" % str(bits[0])
+            )
+        
         if bits[2] != "as":
-            raise template.TemplateSyntaxError("Second argument to %r must be "
-                "'as'" % str(bits[0]))
-        if len(bits) == 6 or len(bits) == 7:
-            if bits[4] != "limit":
-                raise template.TemplateSyntaxError("Fourth argument to %r must be "
-                    "'limit'" % bits[0])
-            if len(bits) == 7:
-                # @@@ fully implement
-                limit = None
-                # n, timeframe = bits[5], bits[6]
-                # limit = datetime.timedelta(**{timeframe: n})
-            else:
+            raise template.TemplateSyntaxError(
+                "Second argument to %r must be 'as'" % str(bits[0])
+            )
+        
+        if len(bits) == 6 or len(bits) == 9:
+            if "limit" not in [bits[4], bits[7]]:
+                raise template.TemplateSyntaxError(
+                    "4th or 7th argument to %r must be 'limit'" % bits[0]
+                )
+            if len(bits) == 6 or bits[4] == "limit":
                 limit = bits[5]
-        else:
-            limit = None
-        return cls(bits[1], bits[3], limit)
+            else:
+                limit = bits[8]
+        
+        if len(bits) == 7 or len(bits) == 9:
+            if "timeframe" not in [bits[4], bits[6]]:
+                raise template.TemplateSyntaxError(
+                    "4th or 6th argument to %r must be 'timeframe'" % bits[0]
+                )
+            if len(bits) == 7 or bits[4] == "timeframe":
+                time_num, time_unit = bits[5], bits[6]
+            else:
+                time_num, time_unit = bits[7], bits[8]
+        
+        return cls(bits[1], bits[3], limit, time_num, time_unit)
     
-    def __init__(self, model, context_var, limit):
+    def __init__(self, model, context_var, limit, time_num, time_unit):
         self.model = template.Variable(model)
         self.context_var = context_var
+        
         if limit is None:
             self.limit = None
         else:
             self.limit = template.Variable(limit)
+        
+        if time_num is None or time_unit is None:
+            self.time_limit = None
+        else:
+            self.time_limit = datetime.timedelta(**{
+                time_unit: int(time_num) # @@@ doing this means can't express "7 days" as variables
+            })
     
     def render(self, context):
         limit = None
         model_lookup = self.model.resolve(context)
-        incorrect_value = ValueError("'%s' does not result in a model. Is it "
-            "correct?" % model_lookup)
+        incorrect_value = ValueError(
+            "'%s' does not result in a model. Is it correct?" % model_lookup
+        )
+        
         try:
             model = app_cache.get_model(*model_lookup.split("."))
         except TypeError:
@@ -59,21 +91,38 @@ class TopObjectsNode(template.Node):
         else:
             if model is None:
                 raise incorrect_value
-        queryset = TargetStat.objects.order_by("position")
-        if issubclass(model, User):
-            queryset = queryset.exclude(target_user=None)
-            queryset = queryset.select_related("target_user")
-        else:
-            # @@@ currently when user code using this template tag needs to
-            # call target it will perform a query (we could be slightly
-            # smarter and when a limit is given we could pre-populate the
-            # underlying cache with a single query using __in)
-            ct = ContentType.objects.get_for_model(model)
-            queryset.filter(target_content_type=ct)
         
+        queryset = model.objects.all()
+        
+        if self.time_limit is None:
+            if issubclass(model, User):
+                queryset = queryset.annotate(num_points=Sum("targetstat_targets__points"))
+            else:
+                queryset = queryset.extra(
+                    select = SortedDict([
+                        ("num_points", "SELECT NULL")
+                    ])
+                )
+        else:
+            since = datetime.datetime.now() - self.time_limit
+            if issubclass(model, User):
+                queryset = queryset.filter(
+                    awardedpointvalue_targets__timestamp__gte=since
+                ).annotate(
+                    num_points=Sum("awardedpointvalue_targets__points")
+                )
+            else:
+                queryset = queryset.extra(
+                    select = SortedDict([
+                        ("num_points", "SELECT NULL")
+                    ])
+                )
+        
+        queryset = queryset.order_by("-num_points")
         if self.limit is not None:
             limit = self.limit.resolve(context)
             queryset = queryset[:limit]
+        
         context[self.context_var] = queryset
         return u""
 
@@ -88,6 +137,12 @@ def top_objects(parser, token):
     or::
     
         {% top_objects "auth.User" as top_users %}
+    
+    or::
+    
+         {% top_objects "auth.User" as top_users limit 10 timeframe 7 days %}
+    
+    All variations return a queryset of the model passed in with points annotated.
     """
     return TopObjectsNode.handle_token(parser, token)
 

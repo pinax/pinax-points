@@ -302,13 +302,33 @@ class TargetObjectsTestCase(BasePointsTestCase, TestCase):
         )
 
 
-class TopObjectsTagTestCase(TestCase):
+class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
+    
+    def setUp(self):
+        self.setup_users(5)
+        self.setup_points({
+            "TEST_THIS_TAG": 10,
+        })
+        group = Group.objects.create(name="Eldarion")
+        user = self.users[0]
+        # award 40 now and 10 set three weeks ago
+        award_points(group, "TEST_THIS_TAG")
+        apv = award_points(group, "TEST_THIS_TAG")
+        apv.timestamp = apv.timestamp - timedelta(days=14)
+        apv.save()
+        award_points(user, "TEST_THIS_TAG")
+        award_points(user, "TEST_THIS_TAG")
+        award_points(user, "TEST_THIS_TAG")
+        award_points(user, "TEST_THIS_TAG")
+        apv = award_points(user, "TEST_THIS_TAG")
+        apv.timestamp = apv.timestamp - timedelta(days=21)
+        apv.save()
     
     def test_no_args(self):
         try:
             t = Template("{% load agon_tags %}{% top_objects %}")
         except TemplateSyntaxError, e:
-            self.assertEqual(str(e), "'top_objects' takes exactly three or six arguments (second argument must be 'as')")
+            self.assertEqual(str(e), "'top_objects' takes exactly three, five, six, or eight arguments (second argument must be 'as')")
     
     def test_typo_as(self):
         """
@@ -331,6 +351,42 @@ class TopObjectsTagTestCase(TestCase):
             t.render(Context({}))
         except ValueError, e:
             self.assertEqual(str(e), "'auth.U' does not result in a model. Is it correct?")
+    
+    def test_should_return_annotated_queryset(self):
+        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users %}""")
+        c = Context({})
+        t.render(c)
+        self.assertEquals(c["top_users"].model, User.objects.all().model)
+    
+    def test_should_return_annotated_queryset_non_user_model(self):
+        t = Template("""{% load agon_tags %}{% top_objects "auth.Group" as top_users %}""")
+        c = Context({})
+        t.render(c)
+        self.assertEquals(c["top_users"].model, Group.objects.all().model)
+
+    def test_should_return_annotated_queryset_has_points(self):
+        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users %}""")
+        c = Context({})
+        t.render(c)
+        self.assertEquals(c["top_users"][0].num_points, 50)
+
+    def test_should_return_annotated_queryset_non_user_model_has_points(self):
+        t = Template("""{% load agon_tags %}{% top_objects "auth.Group" as top_users %}""")
+        c = Context({})
+        t.render(c)
+        self.assertEquals(c["top_users"][0].num_points, 20)
+    
+    def test_should_return_annotated_queryset_with_timeframe_has_points(self):
+        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users timeframe 7 days %}""")
+        c = Context({})
+        t.render(c)
+        self.assertEquals(c["top_users"][0].num_points, 40)
+    
+    def test_should_return_annotated_queryset_with_timeframe_non_user_model_has_points(self):
+        t = Template("""{% load agon_tags %}{% top_objects "auth.Group" as top_users limit 10 timeframe 7 days %}""")
+        c = Context({})
+        t.render(c)
+        self.assertEquals(c["top_users"][0].num_points, 10)
 
 
 class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
