@@ -111,7 +111,10 @@ class TopObjectsNode(template.Node):
             else:
                 raise NotImplementedError("Only auth.User is supported at this time.")
         
-        queryset = queryset.order_by("-num_points")
+        queryset = queryset.filter(
+            num_points__isnull=False
+        ).order_by("-num_points")
+        
         if self.limit is not None:
             limit = self.limit.resolve(context)
             queryset = queryset[:limit]

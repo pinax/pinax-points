@@ -378,7 +378,13 @@ class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
         c = Context({})
         t.render(c)
         self.assertEquals(c["top_users"][0].num_points, 50)
-
+    
+    def test_should_return_annotated_queryset_has_points_with_limit(self):
+        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users limit 3 %}""")
+        c = Context({})
+        t.render(c)
+        self.assertEquals(c["top_users"][0].num_points, 50)
+    
     def test_should_return_annotated_queryset_non_user_model_has_points(self):
         t = Template("""{% load agon_tags %}{% top_objects "auth.Group" as top_users %}""")
         c = Context({})
