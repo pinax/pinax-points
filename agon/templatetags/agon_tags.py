@@ -3,7 +3,7 @@ import datetime
 from django import template
 from django.db.models.loading import cache as app_cache
 
-from agon.models import points_awarded, get_top_objects
+from agon.models import points_awarded, fetch_top_objects
 
 
 register = template.Library()
@@ -91,7 +91,7 @@ class TopObjectsNode(template.Node):
         if self.limit is not None:
             limit = self.limit.resolve(context)
         
-        context[self.context_var] = get_top_objects(
+        context[self.context_var] = fetch_top_objects(
             model,
             limit,
             self.time_limit
