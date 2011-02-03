@@ -235,7 +235,7 @@ def points_awarded(target, since=None):
         ).aggregate(models.Sum("points")).get("points__sum", 0)
 
 
-def fetch_top_objects(model, limit, time_limit):
+def fetch_top_objects(model, time_limit):
     queryset = model.objects.all()
     
     if time_limit is None:
@@ -258,8 +258,4 @@ def fetch_top_objects(model, limit, time_limit):
     
     queryset = queryset.filter(num_points__isnull=False).order_by("-num_points")
     
-    if limit is not None:
-        queryset = queryset[:limit]
-    
     return queryset
-

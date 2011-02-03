@@ -91,11 +91,12 @@ class TopObjectsNode(template.Node):
         if self.limit is not None:
             limit = self.limit.resolve(context)
         
-        context[self.context_var] = fetch_top_objects(
-            model,
-            limit,
-            self.time_limit
-        )
+        objs = fetch_top_objects(model, self.time_limit)
+        
+        if limit is not None:
+            objs = objs[:limit]
+        
+        context[self.context_var] = objs
         
         return u""
 
