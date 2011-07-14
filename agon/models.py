@@ -36,7 +36,6 @@ class AwardedPointValue(models.Model):
     
     # object association (User is special-cased as it's a common case)
     target_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_targets")
-    
     target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets")
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
@@ -46,11 +45,19 @@ class AwardedPointValue(models.Model):
     reason = models.CharField(max_length=140)
     points = models.IntegerField()
     
+    # object association (User is special-cased as it's a common case)
+    source_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_sources")
     source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")
     source_object_id = models.IntegerField(null=True)
     source_object = generic.GenericForeignKey("source_content_type", "source_object_id")
     
     timestamp = models.DateTimeField(default=datetime.datetime.now)
+    
+    @classmethod
+    def points_awarded(cls, **lookup_params):
+        qs - cls._default_manager.filter(**lookup_params)
+        p = qs.aggregate(models.Sum("points")).get("points__sum", 0)
+        return 0 if p is None else p
     
     @property
     def target(self):
@@ -58,7 +65,7 @@ class AwardedPointValue(models.Model):
 
     @property
     def source(self):
-        return self.source_object
+        return self.source_user or self.source_object
     
     def __unicode__(self):
         val = self.value
@@ -75,7 +82,6 @@ class TargetStat(models.Model):
     
     # object association (User is special-cased as it's a common case)
     target_user = models.OneToOneField(User, null=True, related_name="targetstat_targets")
-    
     target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets")
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
@@ -176,7 +182,10 @@ def award_points(target, key, reason="", source=None):
         }
     
     if source is not None:
-        apv.source_object = source
+        if isinstance(source, User):
+            apv.source_user = source
+        else:
+            apv.source_object = source
     
     apv.save()
     
@@ -207,32 +216,41 @@ def award_points(target, key, reason="", source=None):
     return apv
 
 
-def points_awarded(target, since=None):
+def points_awarded(target=None, source=None, since=None):
     """
     Determine out how many points the given target has recieved.
     """
     
-    if isinstance(target, User):
-        lookup_params = {
-            "target_user": target,
-        }
-    else:
-        lookup_params = {
-            "target_content_type": ContentType.objects.get_for_model(target),
-            "target_object_id": target.pk,
-        }
+    lookup_params = {}
+    
+    if target is not None:
+        if isinstance(target, User):
+            lookup_params["target_user"] = target
+        else:
+            lookup_params.update({
+                "target_content_type": ContentType.objects.get_for_model(target),
+                "target_object_id": target.pk,
+            })
+    if source is not None:
+        if isinstance(source, User):
+            lookup_params["source_user"] = source
+        else:
+            lookup_params.update({
+                "source_content_type": ContentType.objects.get_for_model(source),
+                "source_object_id": source.pk,
+            })
     
     if since is None:
-        try:
-            return TargetStat.objects.get(**lookup_params).points
-        except TargetStat.DoesNotExist:
-            return 0
+        if target is not None and source is None:
+            try:
+                return TargetStat.objects.get(**lookup_params).points
+            except TargetStat.DoesNotExist:
+                return 0
+        else:
+            return AwardedPointValue.points_awarded(**lookup_params)
     else:
-        return AwardedPointValue.objects.filter(
-            **lookup_params
-        ).filter(
-            timestamp__gte=since
-        ).aggregate(models.Sum("points")).get("points__sum", 0)
+        lookup_params["timestamp__gte"] = since
+        return AwardedPointValue.points_awarded(**lookup_params)
 
 
 def fetch_top_objects(model, time_limit):
@@ -259,3 +277,35 @@ def fetch_top_objects(model, time_limit):
     queryset = queryset.filter(num_points__isnull=False).order_by("-num_points")
     
     return queryset
+
+
+def cast_vote(user, target, vote):
+    # @@@ WARNING: this code is not safe concurrently
+    
+    # fetch the current vote for user on target (vote should only ever be -1, 0 or 1)
+    existing = points_awarded(source=user, target=target)
+    
+    # ensure we have valid data
+    if existing not in (-1, 0, 1):
+        raise ValueError("something has gone wrong with voting")
+    if vote not in (-1, 0, 1):
+        raise ValueError("invalid vote value")
+    
+    # ensure we won't do something dumb
+    if existing == -1 and vote == -1:
+        raise VoteError("cannot downvote when already downvoted")
+    if existing == 1 and vote == 1:
+        raise VoteError("cannot upvote when already upvoted")
+    
+    points = {
+        (1, 0): -1,
+        (1, -1): -2,
+        (0, 1): 1,
+        (0, 0): 0,
+        (0, -1): -1,
+        (-1, 1): 2,
+        (-1, 0): 1,
+    }[(vote, existing)]
+    
+    if points:
+        award_points(target, points, source=user)
