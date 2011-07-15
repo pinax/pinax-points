@@ -55,7 +55,7 @@ class AwardedPointValue(models.Model):
     
     @classmethod
     def points_awarded(cls, **lookup_params):
-        qs - cls._default_manager.filter(**lookup_params)
+        qs = cls._default_manager.filter(**lookup_params)
         p = qs.aggregate(models.Sum("points")).get("points__sum", 0)
         return 0 if p is None else p
     
@@ -279,7 +279,11 @@ def fetch_top_objects(model, time_limit):
     return queryset
 
 
-def cast_vote(user, target, vote):
+class VoteError(Exception):
+    pass
+
+
+def record_vote(user, target, vote):
     # @@@ WARNING: this code is not safe concurrently
     
     # fetch the current vote for user on target (vote should only ever be -1, 0 or 1)
@@ -305,7 +309,8 @@ def cast_vote(user, target, vote):
         (0, -1): -1,
         (-1, 1): 2,
         (-1, 0): 1,
-    }[(vote, existing)]
+    }[(existing, vote)]
     
     if points:
         award_points(target, points, source=user)
+        return points_awarded(target=target)
