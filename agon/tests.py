@@ -144,6 +144,23 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         )
 
 
+# class NegativePointsTestCase(BasePointsTestCase, TestCase):
+        
+#     def test_negative_totals_floored(self):
+#         group = Group.objects.create(name="Dwarfs")
+#         award_points(group, 500)
+#         self.assertEqual(points_awarded(group), 500)
+#         award_points(group, -700)
+#         self.assertEqual(points_awarded(group), 0)
+    
+#     def test_negative_totals_unfloored(self):
+#         group = Group.objects.create(name="Dwarfs")
+#         award_points(group, 500)
+#         self.assertEqual(points_awarded(group), 500)
+#         award_points(group, -700)
+#         self.assertEqual(points_awarded(group), -200)
+
+
 class PointsTransactionTestCase(BasePointsTestCase, TransactionTestCase):
     
     @skipIf(settings.DATABASE_ENGINE == "sqlite3")

@@ -14,6 +14,7 @@ if not django_settings.configured:
             "django.contrib.auth",
             "agon",
         ],
+        AGON_ALLOW_NEGATIVE_TOTALS = False
     )
 
 def runtests(*test_args):

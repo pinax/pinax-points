@@ -1,6 +1,7 @@
 import datetime
 import itertools
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction, IntegrityError
 
@@ -9,6 +10,9 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
 from agon import signals
+
+
+ALLOW_NEGATIVE_TOTALS = getattr(settings, "AGON_ALLOW_NEGATIVE_TOTALS", True)
 
 
 class PointValue(models.Model):
@@ -167,6 +171,12 @@ def award_points(target, key, reason="", source=None):
             " for its second argument. It must be either a string that matches "
             " a PointValue or an integer amount of points to award."
         )
+    
+    if not ALLOW_NEGATIVE_TOTALS:
+        total = points_awarded(target)
+        if total + points < 0:
+            reason = reason + "(floored from %s to 0)" % points
+            points = -total
     
     apv = AwardedPointValue(points=points, value=point_value, reason=reason)
     if isinstance(target, User):
