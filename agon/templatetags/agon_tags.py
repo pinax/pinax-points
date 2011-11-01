@@ -185,3 +185,48 @@ def points_for_object(parser, token):
         {% points_for_object user limit 7 days as points %}
     """
     return PointsForObjectNode.handle_token(parser, token)
+
+
+class UserHasVotedNode(template.Node):
+    
+    @classmethod
+    def handle_token(cls, parser, token):
+        bits = token.split_contents()
+        if len(bits) != 5:
+            raise template.TemplateSyntaxError
+        if bits[3] != "as":
+            raise template.TemplateSyntaxError
+        return cls(
+            parser.compile_filter(bits[1]),
+            parser.compile_filter(bits[2]),
+            bits[4]
+        )
+    
+    def __init__(self, user, obj, varname):
+        self.user = user
+        self.obj = obj
+        self.varname = varname
+    
+    def render(self, context):
+        user = self.user.resolve(context)
+        obj = self.obj.resolve(context)
+        
+        vote = points_awarded(source=user, target=obj)
+        
+        context[self.varname] = {
+            -1: "downvote",
+            0: "novote",
+            1: "upvote",
+        }.get(vote, "badvote")
+        
+        return u""
+
+
+@register.tag
+def user_has_voted(parser, token):
+    """
+    Usage::
+        {% user_has_voted user obj as var %}
+    """
+    return UserHasVotedNode.handle_token(parser, token)
+
