@@ -1,6 +1,7 @@
+from functools import update_wrapper
+
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
-from django.utils.functional import update_wrapper
 
 from django.contrib import admin
 from django.contrib.admin import helpers
@@ -30,7 +31,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
     reason_display.short_description = "reason"
     
     def get_urls(self):
-        from django.conf.urls.defaults import patterns, url
+        from django.conf.urls import patterns, url
         
         urlpatterns = super(AwardedPointValueAdmin, self).get_urls()
         
