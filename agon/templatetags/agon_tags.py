@@ -130,7 +130,7 @@ def top_objects(parser, token):
 
     or::
 
-         {% top_objects "auth.User" as top_users limit 10 timeframe 7 days %}
+        {% top_objects "auth.User" as top_users limit 10 timeframe 7 days %}
 
     All variations return a queryset of the model passed in with points annotated.
     """
