@@ -19,15 +19,15 @@ class PointValue(models.Model):
     """
     Stores a key and its point value. Simple.
     """
-    
+
     key = models.CharField(max_length=255)
     value = models.IntegerField()
-    
+
     @classmethod
     def create(cls, key, value):
         # simple wrapper in-case creation needs to be wrapped
         cls._default_manager.create(key=key, value=value)
-    
+
     def __unicode__(self):
         return u"%s points for %s" % (self.value, self.key)
 
@@ -37,32 +37,32 @@ class AwardedPointValue(models.Model):
     Stores a single row for each time a point value is awarded. Can be used
     as an audit trail of when point values were awarded to targets.
     """
-    
+
     # object association (User is special-cased as it's a common case)
     target_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_targets")
-    target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets")
+    target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets")  # noqa
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
-    
+
     value = models.ForeignKey(PointValue, null=True)
-    
+
     reason = models.CharField(max_length=140)
     points = models.IntegerField()
-    
+
     # object association (User is special-cased as it's a common case)
     source_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_sources")
-    source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")
+    source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")  # noqa
     source_object_id = models.IntegerField(null=True)
     source_object = generic.GenericForeignKey("source_content_type", "source_object_id")
-    
+
     timestamp = models.DateTimeField(default=datetime.datetime.now)
-    
+
     @classmethod
     def points_awarded(cls, **lookup_params):
         qs = cls._default_manager.filter(**lookup_params)
         p = qs.aggregate(models.Sum("points")).get("points__sum", 0)
         return 0 if p is None else p
-    
+
     @property
     def target(self):
         return self.target_user or self.target_object
@@ -70,7 +70,7 @@ class AwardedPointValue(models.Model):
     @property
     def source(self):
         return self.source_user or self.source_object
-    
+
     def __unicode__(self):
         val = self.value
         if self.value is None:
@@ -83,33 +83,33 @@ class TargetStat(models.Model):
     Stores a single row for each target and their stats (points, position and
     level).
     """
-    
+
     # object association (User is special-cased as it's a common case)
     target_user = models.OneToOneField(User, null=True, related_name="targetstat_targets")
-    target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets")
+    target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets")  # noqa
     target_object_id = models.IntegerField(null=True)
     target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
-    
+
     points = models.IntegerField(default=0)
     position = models.PositiveIntegerField(null=True)
     level = models.PositiveIntegerField(default=1)
-    
+
     class Meta:
         unique_together = [(
             "target_content_type",
             "target_object_id",
         )]
-    
+
     @classmethod
     def update_points(cls, given, lookup_params):
         return cls._default_manager.filter(**lookup_params).update(
-            points = models.F("points") + given,
+            points=models.F("points") + given,
         )
-    
+
     @classmethod
     def update_positions(cls, point_range=None):
         queryset = cls._default_manager.order_by("-points")
-        
+
         if point_range is not None:
             # ensure point_range is always [0] < [1]
             if point_range[0] > point_range[1]:
@@ -119,10 +119,10 @@ class TargetStat(models.Model):
         else:
             all_target_stats = queryset
             position = 0
-        
+
         grouped_target_stats = itertools.groupby(all_target_stats, lambda x: x.points)
         prev_group_len = 0
-        
+
         for points, target_stats in grouped_target_stats:
             position += prev_group_len + 1
             target_stats = list(target_stats)
@@ -131,7 +131,7 @@ class TargetStat(models.Model):
             for target_stat in target_stats:
                 pks.append(target_stat.pk)
             cls._default_manager.filter(pk__in=pks).update(position=position)
-    
+
     @property
     def target(self):
         """
@@ -141,7 +141,7 @@ class TargetStat(models.Model):
             return self.target_user
         else:
             return self.target_object
-    
+
     @property
     def source(self):
         """
@@ -150,14 +150,8 @@ class TargetStat(models.Model):
         return self.source_object
 
 
-def award_points(target, key, reason="", source=None):
-    """
-    Awards target the point value for key.  If key is an integer then it's a
-    one off assignment and should be interpreted as the actual point value.
-    """
+def get_points(key):
     point_value = None
-    points = None
-    
     if isinstance(key, (str, unicode)):
         try:
             point_value = PointValue.objects.get(key=key)
@@ -167,17 +161,27 @@ def award_points(target, key, reason="", source=None):
     elif isinstance(key, int):
         points = key
     else:
-        raise ImproperlyConfigured("award_points didn't receive a valid value"
+        raise ImproperlyConfigured(
+            "award_points didn't receive a valid value"
             " for its second argument. It must be either a string that matches "
             " a PointValue or an integer amount of points to award."
         )
-    
+    return point_value, points
+
+
+def award_points(target, key, reason="", source=None):
+    """
+    Awards target the point value for key.  If key is an integer then it's a
+    one off assignment and should be interpreted as the actual point value.
+    """
+    point_value, points = get_points(key)
+
     if not ALLOW_NEGATIVE_TOTALS:
         total = points_awarded(target)
         if total + points < 0:
             reason = reason + "(floored from %s to 0)" % points
             points = -total
-    
+
     apv = AwardedPointValue(points=points, value=point_value, reason=reason)
     if isinstance(target, User):
         apv.target_user = target
@@ -190,15 +194,15 @@ def award_points(target, key, reason="", source=None):
             "target_content_type": apv.target_content_type,
             "target_object_id": apv.target_object_id,
         }
-    
+
     if source is not None:
         if isinstance(source, User):
             apv.source_user = source
         else:
             apv.source_object = source
-    
+
     apv.save()
-    
+
     if not TargetStat.update_points(points, lookup_params):
         try:
             sid = transaction.savepoint()
@@ -209,7 +213,7 @@ def award_points(target, key, reason="", source=None):
         except IntegrityError:
             transaction.savepoint_rollback(sid)
             TargetStat.update_points(points, lookup_params)
-    
+
     signals.points_awarded.send(
         sender=target.__class__,
         target=target,
@@ -217,12 +221,12 @@ def award_points(target, key, reason="", source=None):
         points=points,
         source=source
     )
-    
+
     new_points = points_awarded(target)
     old_points = new_points - points
-    
+
     TargetStat.update_positions((old_points, new_points))
-    
+
     return apv
 
 
@@ -230,9 +234,9 @@ def points_awarded(target=None, source=None, since=None):
     """
     Determine out how many points the given target has recieved.
     """
-    
+
     lookup_params = {}
-    
+
     if target is not None:
         if isinstance(target, User):
             lookup_params["target_user"] = target
@@ -249,7 +253,7 @@ def points_awarded(target=None, source=None, since=None):
                 "source_content_type": ContentType.objects.get_for_model(source),
                 "source_object_id": source.pk,
             })
-    
+
     if since is None:
         if target is not None and source is None:
             try:
@@ -265,7 +269,7 @@ def points_awarded(target=None, source=None, since=None):
 
 def fetch_top_objects(model, time_limit):
     queryset = model.objects.all()
-    
+
     if time_limit is None:
         if issubclass(model, User):
             queryset = queryset.annotate(
@@ -283,9 +287,9 @@ def fetch_top_objects(model, time_limit):
             )
         else:
             raise NotImplementedError("Only auth.User is supported at this time.")
-    
+
     queryset = queryset.filter(num_points__isnull=False).order_by("-num_points")
-    
+
     return queryset
 
 
@@ -295,22 +299,22 @@ class VoteError(Exception):
 
 def record_vote(user, target, vote):
     # @@@ WARNING: this code is not safe concurrently
-    
+
     # fetch the current vote for user on target (vote should only ever be -1, 0 or 1)
     existing = points_awarded(source=user, target=target)
-    
+
     # ensure we have valid data
     if existing not in (-1, 0, 1):
         raise ValueError("something has gone wrong with voting")
     if vote not in (-1, 0, 1):
         raise ValueError("invalid vote value")
-    
+
     # ensure we won't do something dumb
     if existing == -1 and vote == -1:
         raise VoteError("cannot downvote when already downvoted")
     if existing == 1 and vote == 1:
         raise VoteError("cannot upvote when already upvoted")
-    
+
     points = {
         (1, 0): -1,
         (1, -1): -2,
@@ -320,7 +324,7 @@ def record_vote(user, target, vote):
         (-1, 1): 2,
         (-1, 0): 1,
     }[(existing, vote)]
-    
+
     if points:
         award_points(target, points, source=user)
         return points_awarded(target=target)

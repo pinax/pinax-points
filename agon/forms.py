@@ -9,7 +9,7 @@ class OneOffPointAwardForm(forms.Form):
     user = forms.ModelChoiceField(User.objects.filter(is_active=True))
     points = forms.IntegerField()
     reason = forms.CharField(max_length=140)
-    
+
     def award(self):
         user = self.cleaned_data["user"]
         points = self.cleaned_data["points"]
