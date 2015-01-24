@@ -3,7 +3,7 @@ import datetime
 from django import template
 from django.db.models.loading import cache as app_cache
 
-from agon.models import points_awarded, fetch_top_objects
+from ..models import points_awarded, fetch_top_objects
 
 
 register = template.Library()

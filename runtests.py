@@ -1,29 +1,54 @@
 #!/usr/bin/env python
-
-from os.path import dirname, abspath
+import os
 import sys
 
-from django.conf import settings as django_settings
+import django
 
-if not django_settings.configured:
-    django_settings.configure(
-        DATABASE_ENGINE="sqlite3",
-        INSTALLED_APPS=[
-            "django.contrib.sessions",
-            "django.contrib.contenttypes",
-            "django.contrib.auth",
-            "agon",
-        ],
-        AGON_ALLOW_NEGATIVE_TOTALS = False
-    )
+from django.conf import settings
+
+
+DEFAULT_SETTINGS = dict(
+    INSTALLED_APPS=[
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+        "django.contrib.sites",
+        "pinax.points",
+        "pinax.points.tests"
+    ],
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+    SITE_ID=1,
+    ROOT_URLCONF="points.tests.urls",
+    SECRET_KEY="notasecret",
+    PINAX_POINTS_ALLOW_NEGATIVE_TOTALS=False
+)
+
 
 def runtests(*test_args):
-    if not test_args:
-        test_args = ["agon"]
-    parent = dirname(abspath(__file__))
+    if not settings.configured:
+        settings.configure(**DEFAULT_SETTINGS)
+
+    # Compatibility with Django 1.7's stricter initialization
+    if hasattr(django, "setup"):
+        django.setup()
+
+    parent = os.path.dirname(os.path.abspath(__file__))
     sys.path.insert(0, parent)
-    from django.test.simple import run_tests
-    failures = run_tests(test_args, verbosity=1, interactive=True)
+
+    try:
+        from django.test.runner import DiscoverRunner
+        runner_class = DiscoverRunner
+        test_args = ["pinax.points.tests"]
+    except ImportError:
+        from django.test.simple import DjangoTestSuiteRunner
+        runner_class = DjangoTestSuiteRunner
+        test_args = ["tests"]
+
+    failures = runner_class(verbosity=1, interactive=True, failfast=False).run_tests(test_args)
     sys.exit(failures)
 
 

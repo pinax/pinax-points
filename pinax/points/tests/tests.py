@@ -8,8 +8,8 @@ from django.test import TestCase, TransactionTestCase
 
 from django.contrib.auth.models import User, Group
 
-from agon.models import TargetStat, PointValue, AwardedPointValue
-from agon.models import award_points, points_awarded
+from pinax.points.models import TargetStat, PointValue, AwardedPointValue
+from pinax.points.models import award_points, points_awarded
 
 
 def skipIf(cond):
@@ -165,7 +165,6 @@ class PointsTestCase(BasePointsTestCase, TestCase):
 
 class PointsTransactionTestCase(BasePointsTestCase, TransactionTestCase):
 
-    @skipIf(settings.DATABASE_ENGINE == "sqlite3")
     def test_concurrent_award(self):
         self.setup_users(1)
         user = self.users[0]
@@ -346,7 +345,7 @@ class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
 
     def test_no_args(self):
         try:
-            Template("{% load agon_tags %}{% top_objects %}")
+            Template("{% load pinax_points_tags %}{% top_objects %}")
         except TemplateSyntaxError, e:
             self.assertEqual(
                 str(e),
@@ -358,37 +357,37 @@ class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
         The Alex test.
         """
         try:
-            Template('{% load agon_tags %}{% top_objects "auth.User" a top_users %}')
+            Template('{% load pinax_points_tags %}{% top_objects "auth.User" a top_users %}')
         except TemplateSyntaxError, e:
             self.assertEqual(str(e), "Second argument to 'top_objects' must be 'as'")
 
     def test_bad_model_arg(self):
-        t = Template('{% load agon_tags %}{% top_objects "auth" as top_users %}')
+        t = Template('{% load pinax_points_tags %}{% top_objects "auth" as top_users %}')
         try:
             t.render(Context({}))
         except ValueError, e:
             self.assertEqual(str(e), "'auth' does not result in a model. Is it correct?")
 
-        t = Template('{% load agon_tags %}{% top_objects "auth.U" as top_users %}')
+        t = Template('{% load pinax_points_tags %}{% top_objects "auth.U" as top_users %}')
         try:
             t.render(Context({}))
         except ValueError, e:
             self.assertEqual(str(e), "'auth.U' does not result in a model. Is it correct?")
 
     def test_should_return_annotated_queryset(self):
-        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users %}""")
+        t = Template("""{% load pinax_points_tags %}{% top_objects "auth.User" as top_users %}""")
         c = Context({})
         t.render(c)
         self.assertEquals(c["top_users"].model, User.objects.all().model)
 
     def test_should_return_annotated_queryset_with_limit(self):
-        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users limit 3 %}""")
+        t = Template("""{% load pinax_points_tags %}{% top_objects "auth.User" as top_users limit 3 %}""")
         c = Context({})
         t.render(c)
         self.assertEquals(c["top_users"].model, User.objects.all().model)
 
     def test_should_return_annotated_queryset_non_user_model(self):
-        t = Template("""{% load agon_tags %}{% top_objects "auth.Group" as top_users %}""")
+        t = Template("""{% load pinax_points_tags %}{% top_objects "auth.Group" as top_users %}""")
         c = Context({})
         try:
             t.render(c)
@@ -397,19 +396,19 @@ class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
             pass
 
     def test_should_return_annotated_queryset_has_points(self):
-        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users %}""")
+        t = Template("""{% load pinax_points_tags %}{% top_objects "auth.User" as top_users %}""")
         c = Context({})
         t.render(c)
         self.assertEquals(c["top_users"][0].num_points, 50)
 
     def test_should_return_annotated_queryset_has_points_with_limit(self):
-        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users limit 3 %}""")
+        t = Template("""{% load pinax_points_tags %}{% top_objects "auth.User" as top_users limit 3 %}""")
         c = Context({})
         t.render(c)
         self.assertEquals(c["top_users"][0].num_points, 50)
 
     def test_should_return_annotated_queryset_non_user_model_has_points(self):
-        t = Template("""{% load agon_tags %}{% top_objects "auth.Group" as top_users %}""")
+        t = Template("""{% load pinax_points_tags %}{% top_objects "auth.Group" as top_users %}""")
         c = Context({})
         try:
             t.render(c)
@@ -418,13 +417,13 @@ class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
             pass
 
     def test_should_return_annotated_queryset_with_timeframe_has_points(self):
-        t = Template("""{% load agon_tags %}{% top_objects "auth.User" as top_users timeframe 7 days %}""")  # noqa
+        t = Template("""{% load pinax_points_tags %}{% top_objects "auth.User" as top_users timeframe 7 days %}""")  # noqa
         c = Context({})
         t.render(c)
         self.assertEquals(c["top_users"][0].num_points, 40)
 
     def test_should_return_annotated_queryset_with_timeframe_non_user_model_has_points(self):
-        t = Template("""{% load agon_tags %}{% top_objects "auth.Group" as top_users limit 10 timeframe 7 days %}""")  # noqa
+        t = Template("""{% load pinax_points_tags %}{% top_objects "auth.Group" as top_users limit 10 timeframe 7 days %}""")  # noqa
         c = Context({})
         try:
             t.render(c)
@@ -440,14 +439,14 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
 
     def test_no_args(self):
         try:
-            Template("{% load agon_tags %}{% points_for_object %}")
+            Template("{% load pinax_points_tags %}{% points_for_object %}")
         except TemplateSyntaxError, e:
             self.assertEqual(str(e), "'points_for_object' takes 1, 3, or 6 arguments.")
 
     def test_type_as(self):
         try:
             self.setup_users(1)
-            t = Template('{% load agon_tags %}{% points_for_object user a points %}')
+            t = Template('{% load pinax_points_tags %}{% points_for_object user a points %}')
             t.render(Context({"user": self.users[0]}))
         except TemplateSyntaxError, e:
             self.assertEqual(str(e), "Second argument to 'points_for_object' should be 'as'")
@@ -455,13 +454,13 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
     def test_user_object_without_as(self):
         self.setup_users(1)
         award_points(self.users[0], 15)
-        t = Template('{% load agon_tags %}{% points_for_object user %} Points')
+        t = Template('{% load pinax_points_tags %}{% points_for_object user %} Points')
         self.assertEqual(t.render(Context({"user": self.users[0]})), "15 Points")
 
     def test_user_object_with_as(self):
         self.setup_users(1)
         award_points(self.users[0], 10)
-        t = Template('{% load agon_tags %}{% points_for_object user as points %}{{ points }} Points')  # noqa
+        t = Template('{% load pinax_points_tags %}{% points_for_object user as points %}{{ points }} Points')  # noqa
         self.assertEqual(t.render(Context({"user": self.users[0]})), "10 Points")
 
     def test_user_object_with_limit(self):
@@ -470,7 +469,7 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
         ap.timestamp = ap.timestamp - timedelta(days=14)
         ap.save()
         award_points(self.users[0], 18)
-        t = Template('{% load agon_tags %}{% points_for_object user limit 7 days as points %}{{ points }} Points')  # noqa
+        t = Template('{% load pinax_points_tags %}{% points_for_object user limit 7 days as points %}{{ points }} Points')  # noqa
         self.assertEqual(t.render(Context({"user": self.users[0]})), "18 Points")
 
     def test_user_object_with_limit_30_days(self):
@@ -479,5 +478,5 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
         ap.timestamp = ap.timestamp - timedelta(days=14)
         ap.save()
         award_points(self.users[0], 18)
-        t = Template('{% load agon_tags %}{% points_for_object user limit 30 days as points %}{{ points }} Points')  # noqa
+        t = Template('{% load pinax_points_tags %}{% points_for_object user limit 30 days as points %}{{ points }} Points')  # noqa
         self.assertEqual(t.render(Context({"user": self.users[0]})), "28 Points")

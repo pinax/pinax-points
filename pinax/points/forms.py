@@ -2,7 +2,7 @@ from django import forms
 
 from django.contrib.auth.models import User
 
-from agon.models import award_points
+from .models import award_points
 
 
 class OneOffPointAwardForm(forms.Form):

@@ -6,8 +6,8 @@ from django.template import RequestContext
 from django.contrib import admin
 from django.contrib.admin import helpers
 
-from agon.forms import OneOffPointAwardForm
-from agon.models import PointValue, AwardedPointValue
+from .forms import OneOffPointAwardForm
+from .models import PointValue, AwardedPointValue
 
 
 class AwardedPointValueAdmin(admin.ModelAdmin):

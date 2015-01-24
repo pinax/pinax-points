@@ -9,10 +9,10 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
-from agon import signals
+from . import signals
 
 
-ALLOW_NEGATIVE_TOTALS = getattr(settings, "AGON_ALLOW_NEGATIVE_TOTALS", True)
+ALLOW_NEGATIVE_TOTALS = getattr(settings, "PINAX_POINTS_ALLOW_NEGATIVE_TOTALS", True)
 
 
 class PointValue(models.Model):

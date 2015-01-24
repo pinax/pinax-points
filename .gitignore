@@ -1,4 +1,10 @@
-MANIFEST
+build
 dist
-*.py[co]
-agon.egg-info
+.coverage
+.tox
+MANIFEST
+*.pyc
+*.egg-info
+*.egg
+docs/_build/
+htmlcov/

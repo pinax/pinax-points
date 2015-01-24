@@ -1,1 +1,0 @@
--e git+git://github.com/brosner/django-app-test-runner.git#egg=app_test_runner
