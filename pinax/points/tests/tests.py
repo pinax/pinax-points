@@ -1,10 +1,11 @@
 from datetime import timedelta
-from threading import Thread
+# from threading import Thread
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.template import Template, Context, TemplateSyntaxError
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
+# from django.test import TestCase, TransactionTestCase
 
 from django.contrib.auth.models import User, Group
 
