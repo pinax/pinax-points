@@ -114,7 +114,7 @@ class TopObjectsNode(template.Node):
 
         context[self.context_var] = objs
 
-        return u""
+        return ""
 
 
 @register.tag
@@ -237,7 +237,7 @@ class UserHasVotedNode(template.Node):
             1: "upvote",
         }.get(vote, "badvote")
 
-        return u""
+        return ""
 
 
 @register.tag
