@@ -142,7 +142,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
             str(apv),
-            u"{0} points awarded to {1}".format(500, str(group))
+            "{0} points awarded to {1}".format(500, str(group))
         )
 
 
