@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction, IntegrityError
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
 from . import signals
@@ -42,7 +42,7 @@ class AwardedPointValue(models.Model):
     target_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_targets")
     target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets")  # noqa
     target_object_id = models.IntegerField(null=True)
-    target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
+    target_object = GenericForeignKey("target_content_type", "target_object_id")
 
     value = models.ForeignKey(PointValue, null=True)
 
@@ -53,7 +53,7 @@ class AwardedPointValue(models.Model):
     source_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_sources")
     source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")  # noqa
     source_object_id = models.IntegerField(null=True)
-    source_object = generic.GenericForeignKey("source_content_type", "source_object_id")
+    source_object = GenericForeignKey("source_content_type", "source_object_id")
 
     timestamp = models.DateTimeField(default=datetime.datetime.now)
 
@@ -88,7 +88,7 @@ class TargetStat(models.Model):
     target_user = models.OneToOneField(User, null=True, related_name="targetstat_targets")
     target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets")  # noqa
     target_object_id = models.IntegerField(null=True)
-    target_object = generic.GenericForeignKey("target_content_type", "target_object_id")
+    target_object = GenericForeignKey("target_content_type", "target_object_id")
 
     points = models.IntegerField(default=0)
     position = models.PositiveIntegerField(null=True)
