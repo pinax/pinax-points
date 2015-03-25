@@ -26,7 +26,7 @@ def assert_arg_length(bits):
 def assert_has_as(bits):
     if bits[2] != "as":
         raise template.TemplateSyntaxError(
-            "Second argument to {0} must be 'as'".format(bits[0])
+            "Second argument to '{0}' must be 'as'".format(bits[0])
         )
 
 
