@@ -52,7 +52,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         user = self.users[0]
         try:
             award_points(user, True)
-        except ImproperlyConfigured, e:
+        except ImproperlyConfigured as e:
             self.assertEqual(
                 str(e),
                 "award_points didn't receive a valid value"
