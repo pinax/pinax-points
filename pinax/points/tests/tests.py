@@ -29,7 +29,7 @@ class BasePointsTestCase(object):
         self.users = [
             User.objects.create_user(
                 "user_{0}".format(i), "user_{0}@example.com".format(i), str(i)
-            ) for i in xrange(N)
+            ) for i in range(N)
         ]
 
     def setup_points(self, value):
