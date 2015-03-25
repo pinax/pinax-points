@@ -4,6 +4,7 @@ import itertools
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction, IntegrityError
+from django.utils.encoding import python_2_unicode_compatible
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -15,6 +16,7 @@ from . import signals
 ALLOW_NEGATIVE_TOTALS = getattr(settings, "PINAX_POINTS_ALLOW_NEGATIVE_TOTALS", True)
 
 
+@python_2_unicode_compatible
 class PointValue(models.Model):
     """
     Stores a key and its point value. Simple.
@@ -28,10 +30,11 @@ class PointValue(models.Model):
         # simple wrapper in-case creation needs to be wrapped
         cls._default_manager.create(key=key, value=value)
 
-    def __unicode__(self):
-        return u"%s points for %s" % (self.value, self.key)
+    def __str__(self):
+        return "{} points for {}".format(self.value, self.key)
 
 
+@python_2_unicode_compatible
 class AwardedPointValue(models.Model):
     """
     Stores a single row for each time a point value is awarded. Can be used
@@ -71,11 +74,11 @@ class AwardedPointValue(models.Model):
     def source(self):
         return self.source_user or self.source_object
 
-    def __unicode__(self):
+    def __str__(self):
         val = self.value
         if self.value is None:
-            val = "%s points" % self.points
-        return u"%s awarded to %s" % (val, self.target)
+            val = "{} points".format(self.points)
+        return "{} awarded to {}".format(val, self.target)
 
 
 class TargetStat(models.Model):
@@ -157,7 +160,7 @@ def get_points(key):
             point_value = PointValue.objects.get(key=key)
             points = point_value.value
         except PointValue.DoesNotExist:
-            raise ImproperlyConfigured("PointValue for '%s' does not exist" % key)
+            raise ImproperlyConfigured("PointValue for '{}' does not exist".format(key))
     elif isinstance(key, int):
         points = key
     else:
@@ -179,7 +182,7 @@ def award_points(target, key, reason="", source=None):
     if not ALLOW_NEGATIVE_TOTALS:
         total = points_awarded(target)
         if total + points < 0:
-            reason = reason + "(floored from %s to 0)" % points
+            reason = reason + "(floored from {} to 0)".format(points)
             points = -total
 
     apv = AwardedPointValue(points=points, value=point_value, reason=reason)
