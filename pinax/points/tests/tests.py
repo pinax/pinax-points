@@ -33,8 +33,8 @@ class BasePointsTestCase(object):
         ]
 
     def setup_points(self, value):
-        for k, v in value.iteritems():
-            PointValue.create(key=k, value=v)
+        for key in value:
+            PointValue.create(key=key, value=value[key])
 
 
 class PointsTestCase(BasePointsTestCase, TestCase):
