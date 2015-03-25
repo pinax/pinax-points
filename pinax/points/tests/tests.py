@@ -111,7 +111,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
             str(apv),
-            "{0} points for {1} awarded to {2}".format(1, "JOINED_SITE", unicode(user))
+            "{0} points for {1} awarded to {2}".format(1, "JOINED_SITE", str(user))
         )
 
     def test_unicode_simple_generic_point_award(self):
@@ -123,7 +123,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
             str(apv),
-            "{0} points for {1} awarded to {2}".format(5, "ATE_SOMETHING", unicode(group))
+            "{0} points for {1} awarded to {2}".format(5, "ATE_SOMETHING", str(group))
         )
 
     def test_unicode_user_one_off_point_award(self):
@@ -133,7 +133,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
             str(apv),
-            "{0} points awarded to {1}".format(500, unicode(user))
+            "{0} points awarded to {1}".format(500, str(user))
         )
 
     def test_unicode_generic_one_off_point_award(self):
@@ -142,7 +142,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
             str(apv),
-            u"{0} points awarded to {1}".format(500, unicode(group))
+            u"{0} points awarded to {1}".format(500, str(group))
         )
 
 
