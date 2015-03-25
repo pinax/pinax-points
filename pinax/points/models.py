@@ -155,7 +155,7 @@ class TargetStat(models.Model):
 
 def get_points(key):
     point_value = None
-    if isinstance(key, int):
+    if isinstance(key, int) and not isinstance(key, bool):
         points = key
     else:
         try:

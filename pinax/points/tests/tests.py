@@ -55,9 +55,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         except ImproperlyConfigured as e:
             self.assertEqual(
                 str(e),
-                "award_points didn't receive a valid value"
-                " for it's 2nd argument.  It must be either a string that matches a"
-                " PointValue or an integer amount of points to award."
+                "PointValue for 'True' does not exist"
             )
 
     def test_simple_user_point_award(self):
