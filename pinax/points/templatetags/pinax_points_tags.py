@@ -18,7 +18,7 @@ def assert_arg_length(bits):
         9: limit N timeframe N UNITS --or-- timeframe N UNITS limit N
         """
         raise template.TemplateSyntaxError(
-            "{0} takes exactly three, five, six, or eight arguments (second"
+            "'{0}' takes exactly three, five, six, or eight arguments (second"
             " argument must be 'as')".format(bits[0])
         )
 
