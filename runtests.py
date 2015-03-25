@@ -19,11 +19,13 @@ DEFAULT_SETTINGS = dict(
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": ":memory:",
+            "TEST_NAME": "dev.db"
         }
     },
     SITE_ID=1,
     ROOT_URLCONF="points.tests.urls",
     SECRET_KEY="notasecret",
+    MIDDLEWARE_CLASSES=[],
     PINAX_POINTS_ALLOW_NEGATIVE_TOTALS=False
 )
 
