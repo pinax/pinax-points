@@ -28,7 +28,7 @@ class BasePointsTestCase(object):
     def setup_users(self, N):
         self.users = [
             User.objects.create_user(
-                "user_%d" % i, "user_%d@example.com" % i, str(i)
+                "user_{0}".format(i), "user_{0}@example.com".format(i), str(i)
             ) for i in xrange(N)
         ]
 
@@ -44,7 +44,7 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         user = self.users[0]
         try:
             award_points(user, "JOINED_SITE")
-        except ImproperlyConfigured, e:
+        except ImproperlyConfigured as e:
             self.assertEqual(str(e), "PointValue for 'JOINED_SITE' does not exist")
 
     def test_improperly_configured(self):
@@ -110,8 +110,8 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         award_points(user, "JOINED_SITE")
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
-            unicode(apv),
-            u"%s points for %s awarded to %s" % (1, "JOINED_SITE", unicode(user))
+            str(apv),
+            "{0} points for {1} awarded to {2}".format(1, "JOINED_SITE", unicode(user))
         )
 
     def test_unicode_simple_generic_point_award(self):
@@ -122,8 +122,8 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         award_points(group, "ATE_SOMETHING")
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
-            unicode(apv),
-            u"%s points for %s awarded to %s" % (5, "ATE_SOMETHING", unicode(group))
+            str(apv),
+            "{0} points for {1} awarded to {2}".format(5, "ATE_SOMETHING", unicode(group))
         )
 
     def test_unicode_user_one_off_point_award(self):
@@ -132,8 +132,8 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         award_points(user, 500)
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
-            unicode(apv),
-            u"%s points awarded to %s" % (500, unicode(user))
+            str(apv),
+            "{0} points awarded to {1}".format(500, unicode(user))
         )
 
     def test_unicode_generic_one_off_point_award(self):
@@ -141,8 +141,8 @@ class PointsTestCase(BasePointsTestCase, TestCase):
         award_points(group, 500)
         apv = AwardedPointValue.objects.all()[0]
         self.assertEqual(
-            unicode(apv),
-            u"%s points awarded to %s" % (500, unicode(group))
+            str(apv),
+            u"{0} points awarded to {1}".format(500, unicode(group))
         )
 
 
@@ -346,7 +346,7 @@ class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
     def test_no_args(self):
         try:
             Template("{% load pinax_points_tags %}{% top_objects %}")
-        except TemplateSyntaxError, e:
+        except TemplateSyntaxError as e:
             self.assertEqual(
                 str(e),
                 "'top_objects' takes exactly three, five, six, or eight arguments (second argument must be 'as')"  # noqa
@@ -358,7 +358,7 @@ class TopObjectsTagTestCase(BasePointsTestCase, TestCase):
         """
         try:
             Template('{% load pinax_points_tags %}{% top_objects "auth.User" a top_users %}')
-        except TemplateSyntaxError, e:
+        except TemplateSyntaxError as e:
             self.assertEqual(str(e), "Second argument to 'top_objects' must be 'as'")
 
     # Exceptions will vary depending on Django version
@@ -441,7 +441,7 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
     def test_no_args(self):
         try:
             Template("{% load pinax_points_tags %}{% points_for_object %}")
-        except TemplateSyntaxError, e:
+        except TemplateSyntaxError as e:
             self.assertEqual(str(e), "'points_for_object' takes 1, 3, or 6 arguments.")
 
     def test_type_as(self):
@@ -449,7 +449,7 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
             self.setup_users(1)
             t = Template('{% load pinax_points_tags %}{% points_for_object user a points %}')
             t.render(Context({"user": self.users[0]}))
-        except TemplateSyntaxError, e:
+        except TemplateSyntaxError as e:
             self.assertEqual(str(e), "Second argument to 'points_for_object' should be 'as'")
 
     def test_user_object_without_as(self):
