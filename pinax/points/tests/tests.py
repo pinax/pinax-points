@@ -175,7 +175,7 @@ class PointsTransactionTestCase(BasePointsTestCase, TransactionTestCase):
         def run():
             award_points(user, "INVITED_USER")
         threads = []
-        for i in xrange(5):
+        for i in range(5):
             t = Thread(target=run)
             threads.append(t)
             t.start()
