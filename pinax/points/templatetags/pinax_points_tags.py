@@ -184,7 +184,7 @@ class PointsForObjectNode(template.Node):
         if self.context_var is not None:
             context[self.context_var] = points
             return ""
-        return unicode(points)
+        return str(points)
 
 
 @register.tag
