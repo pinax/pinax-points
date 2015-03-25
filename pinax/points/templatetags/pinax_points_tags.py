@@ -18,15 +18,15 @@ def assert_arg_length(bits):
         9: limit N timeframe N UNITS --or-- timeframe N UNITS limit N
         """
         raise template.TemplateSyntaxError(
-            "%r takes exactly three, five, six, or eight arguments (second"
-            " argument must be 'as')" % str(bits[0])
+            "{0} takes exactly three, five, six, or eight arguments (second"
+            " argument must be 'as')".format(bits[0])
         )
 
 
 def assert_has_as(bits):
     if bits[2] != "as":
         raise template.TemplateSyntaxError(
-            "Second argument to %r must be 'as'" % str(bits[0])
+            "Second argument to {0} must be 'as'".format(bits[0])
         )
 
 
@@ -35,7 +35,7 @@ def get_limit(bits):
     if len(bits) == 6 or len(bits) == 9:
         if "limit" != bits[4] and (len(bits) == 9 and "limit" == bits[7]):
             raise template.TemplateSyntaxError(
-                "4th or 7th argument to %r must be 'limit'" % bits[0]
+                "4th or 7th argument to {0} must be 'limit'".format(bits[0])
             )
         if len(bits) == 6 or bits[4] == "limit":
             limit = bits[5]
@@ -50,7 +50,7 @@ def get_time_num_and_unit(bits):
     if len(bits) == 7 or len(bits) == 9:
         if "timeframe" not in [bits[4], bits[6]]:
             raise template.TemplateSyntaxError(
-                "4th or 6th argument to %r must be 'timeframe'" % bits[0]
+                "4th or 6th argument to {0} must be 'timeframe'".format(bits[0])
             )
         if len(bits) == 7 or bits[4] == "timeframe":
             time_num, time_unit = bits[5], bits[6]
@@ -93,7 +93,7 @@ class TopObjectsNode(template.Node):
         limit = None
         model_lookup = self.model.resolve(context)
         incorrect_value = ValueError(
-            "'%s' does not result in a model. Is it correct?" % model_lookup
+            "'{0}' does not result in a model. Is it correct?".format(model_lookup)
         )
 
         try:
@@ -148,13 +148,13 @@ class PointsForObjectNode(template.Node):
             # len(bits) == 7 will support interval timeframing
             if bits[2] != "as":
                 raise template.TemplateSyntaxError(
-                    "Second argument to '%s' should be 'as'" % bits[0]
+                    "Second argument to '{0}' should be 'as'".format(bits[0])
                 )
             return cls(bits[1], context_var=bits[3])
         elif len(bits) == 7:
             if bits[2] != "limit" and bits[5] != "as":
                 raise template.TemplateSyntaxError(
-                    "Second argument to '%s' should be 'as' and fifth argument should be 'limit" % bits[0]  # noqa
+                    "Second argument to '{0}' should be 'as' and fifth argument should be 'limit".format(bits[0])  # noqa
                 )
             return cls(
                 bits[1],
@@ -162,7 +162,7 @@ class PointsForObjectNode(template.Node):
                 limit_unit=bits[4],
                 context_var=bits[6]
             )
-        raise template.TemplateSyntaxError("'%s' takes 1, 3, or 6 arguments." % bits[0])
+        raise template.TemplateSyntaxError("'{0}' takes 1, 3, or 6 arguments.".format(bits[0]))
 
     def __init__(self, obj, context_var=None, limit_num=None, limit_unit=None):
         self.obj = template.Variable(obj)

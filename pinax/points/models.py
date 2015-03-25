@@ -31,7 +31,7 @@ class PointValue(models.Model):
         cls._default_manager.create(key=key, value=value)
 
     def __str__(self):
-        return "{} points for {}".format(self.value, self.key)
+        return "{0} points for {1}".format(self.value, self.key)
 
 
 @python_2_unicode_compatible
@@ -77,8 +77,8 @@ class AwardedPointValue(models.Model):
     def __str__(self):
         val = self.value
         if self.value is None:
-            val = "{} points".format(self.points)
-        return "{} awarded to {}".format(val, self.target)
+            val = "{0} points".format(self.points)
+        return "{0} awarded to {1}".format(val, self.target)
 
 
 class TargetStat(models.Model):
@@ -160,7 +160,7 @@ def get_points(key):
             point_value = PointValue.objects.get(key=key)
             points = point_value.value
         except PointValue.DoesNotExist:
-            raise ImproperlyConfigured("PointValue for '{}' does not exist".format(key))
+            raise ImproperlyConfigured("PointValue for '{0}' does not exist".format(key))
     elif isinstance(key, int):
         points = key
     else:
@@ -182,7 +182,7 @@ def award_points(target, key, reason="", source=None):
     if not ALLOW_NEGATIVE_TOTALS:
         total = points_awarded(target)
         if total + points < 0:
-            reason = reason + "(floored from {} to 0)".format(points)
+            reason = reason + "(floored from {0} to 0)".format(points)
             points = -total
 
     apv = AwardedPointValue(points=points, value=point_value, reason=reason)

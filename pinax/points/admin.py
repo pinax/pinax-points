@@ -40,14 +40,12 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
             return update_wrapper(wrapper, view)
 
-        info = self.model._meta.app_label, self.model._meta.module_name
-
         return patterns(
             "",
             url(
                 r"^one_off_points/$",
                 wrap(self.one_off_points),
-                name="%s_%s_one_off_points" % info
+                name="{0}_{1}_one_off_points".format(self.model._meta.app_label, self.model._meta.module_name)
             )
         ) + urlpatterns
 
@@ -56,7 +54,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             form = OneOffPointAwardForm(request.POST)
             if form.is_valid():
                 form.award()
-                return redirect("admin:agon_awardedpointvalue_changelist")
+                return redirect("admin:points_awardedpointvalue_changelist")
         else:
             form = OneOffPointAwardForm()
         form = helpers.AdminForm(
