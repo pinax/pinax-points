@@ -7,10 +7,10 @@ from django.db import models, transaction, IntegrityError
 from django.utils.encoding import python_2_unicode_compatible
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
 from . import signals
+from .compat import GenericForeignKey
 
 
 ALLOW_NEGATIVE_TOTALS = getattr(settings, "PINAX_POINTS_ALLOW_NEGATIVE_TOTALS", True)
