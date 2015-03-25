@@ -155,7 +155,7 @@ class TargetStat(models.Model):
 
 def get_points(key):
     point_value = None
-    if isinstance(key, (str, unicode)):
+    if isinstance(key, basestring):
         try:
             point_value = PointValue.objects.get(key=key)
             points = point_value.value
