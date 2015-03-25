@@ -155,20 +155,14 @@ class TargetStat(models.Model):
 
 def get_points(key):
     point_value = None
-    if isinstance(key, basestring):
+    if isinstance(key, int):
+        points = key
+    else:
         try:
             point_value = PointValue.objects.get(key=key)
             points = point_value.value
         except PointValue.DoesNotExist:
             raise ImproperlyConfigured("PointValue for '{0}' does not exist".format(key))
-    elif isinstance(key, int):
-        points = key
-    else:
-        raise ImproperlyConfigured(
-            "award_points didn't receive a valid value"
-            " for its second argument. It must be either a string that matches "
-            " a PointValue or an integer amount of points to award."
-        )
     return point_value, points
 
 
