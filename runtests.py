@@ -25,7 +25,12 @@ DEFAULT_SETTINGS = dict(
     ROOT_URLCONF="points.tests.urls",
     SECRET_KEY="notasecret",
     MIDDLEWARE_CLASSES=[],
-    PINAX_POINTS_ALLOW_NEGATIVE_TOTALS=False
+    PINAX_POINTS_ALLOW_NEGATIVE_TOTALS=False,
+    TEMPLATES=[
+        {
+            "BACKEND": "django.template.backends.django.DjangoTemplates"
+        },
+    ]
 )
 
 
