@@ -16,7 +16,7 @@ setup(
     description="a points, positions and levels app for Django",
     name="pinax-points",
     long_description=read("README.rst"),
-    version="0.2",
+    version="0.3",
     url="http://pinax-points.rtfd.org/",
     license="MIT",
     packages=find_packages(),
