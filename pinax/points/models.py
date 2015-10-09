@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction, IntegrityError
 from django.utils.encoding import python_2_unicode_compatible
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 
 from . import signals
@@ -42,7 +42,7 @@ class AwardedPointValue(models.Model):
     """
 
     # object association (User is special-cased as it's a common case)
-    target_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_targets")
+    target_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="awardedpointvalue_targets")
     target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets")  # noqa
     target_object_id = models.IntegerField(null=True)
     target_object = GenericForeignKey("target_content_type", "target_object_id")
@@ -53,7 +53,7 @@ class AwardedPointValue(models.Model):
     points = models.IntegerField()
 
     # object association (User is special-cased as it's a common case)
-    source_user = models.ForeignKey(User, null=True, related_name="awardedpointvalue_sources")
+    source_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="awardedpointvalue_sources")
     source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")  # noqa
     source_object_id = models.IntegerField(null=True)
     source_object = GenericForeignKey("source_content_type", "source_object_id")
@@ -88,7 +88,7 @@ class TargetStat(models.Model):
     """
 
     # object association (User is special-cased as it's a common case)
-    target_user = models.OneToOneField(User, null=True, related_name="targetstat_targets")
+    target_user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, related_name="targetstat_targets")
     target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets")  # noqa
     target_object_id = models.IntegerField(null=True)
     target_object = GenericForeignKey("target_content_type", "target_object_id")
@@ -180,7 +180,7 @@ def award_points(target, key, reason="", source=None):
             points = -total
 
     apv = AwardedPointValue(points=points, value=point_value, reason=reason)
-    if isinstance(target, User):
+    if isinstance(target, get_user_model()):
         apv.target_user = target
         lookup_params = {
             "target_user": target
@@ -193,7 +193,7 @@ def award_points(target, key, reason="", source=None):
         }
 
     if source is not None:
-        if isinstance(source, User):
+        if isinstance(source, get_user_model()):
             apv.source_user = source
         else:
             apv.source_object = source
@@ -235,7 +235,7 @@ def points_awarded(target=None, source=None, since=None):
     lookup_params = {}
 
     if target is not None:
-        if isinstance(target, User):
+        if isinstance(target, get_user_model()):
             lookup_params["target_user"] = target
         else:
             lookup_params.update({
@@ -243,7 +243,7 @@ def points_awarded(target=None, source=None, since=None):
                 "target_object_id": target.pk,
             })
     if source is not None:
-        if isinstance(source, User):
+        if isinstance(source, get_user_model()):
             lookup_params["source_user"] = source
         else:
             lookup_params.update({
@@ -268,7 +268,7 @@ def fetch_top_objects(model, time_limit):
     queryset = model.objects.all()
 
     if time_limit is None:
-        if issubclass(model, User):
+        if issubclass(model, get_user_model()):
             queryset = queryset.annotate(
                 num_points=models.Sum("targetstat_targets__points")
             )
@@ -276,7 +276,7 @@ def fetch_top_objects(model, time_limit):
             raise NotImplementedError("Only auth.User is supported at this time.")
     else:
         since = datetime.datetime.now() - time_limit
-        if issubclass(model, User):
+        if issubclass(model, get_user_model()):
             queryset = queryset.filter(
                 awardedpointvalue_targets__timestamp__gte=since
             ).annotate(
