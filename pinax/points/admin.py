@@ -1,3 +1,5 @@
+import django
+
 from functools import update_wrapper
 
 from django.shortcuts import render_to_response, redirect
@@ -40,12 +42,16 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
             return update_wrapper(wrapper, view)
 
+        if django.VERSION < (1, 7):
+            info = self.model._meta.app_label, self.model._meta.module_name
+        else:
+            info = self.model._meta.app_label, self.model._meta.model_name
         return patterns(
             "",
             url(
                 r"^one_off_points/$",
                 wrap(self.one_off_points),
-                name="{0}_{1}_one_off_points".format(self.model._meta.app_label, self.model._meta.module_name)
+                name="{0}_{1}_one_off_points".format(info[0], info[1])
             )
         ) + urlpatterns
 
