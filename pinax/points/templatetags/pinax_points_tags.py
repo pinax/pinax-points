@@ -1,10 +1,9 @@
 import datetime
 
 from django import template
+from django.apps import apps
 
-from ..compat import app_cache
-from ..models import points_awarded, fetch_top_objects
-
+from ..models import fetch_top_objects, points_awarded
 
 register = template.Library()
 
@@ -97,7 +96,7 @@ class TopObjectsNode(template.Node):
         )
 
         try:
-            model = app_cache.get_model(*model_lookup.split("."))
+            model = apps.get_model(*model_lookup.split("."))
         except TypeError:
             raise incorrect_value
         else:

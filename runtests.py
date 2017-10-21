@@ -4,43 +4,10 @@ import sys
 
 import django
 
-from django.conf import settings
-
-
-DEFAULT_SETTINGS = dict(
-    INSTALLED_APPS=[
-        "django.contrib.auth",
-        "django.contrib.contenttypes",
-        "django.contrib.sites",
-        "pinax.points",
-        "pinax.points.tests"
-    ],
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:"
-        }
-    },
-    SITE_ID=1,
-    ROOT_URLCONF="points.tests.urls",
-    SECRET_KEY="notasecret",
-    MIDDLEWARE_CLASSES=[],
-    PINAX_POINTS_ALLOW_NEGATIVE_TOTALS=False,
-    TEMPLATES=[
-        {
-            "BACKEND": "django.template.backends.django.DjangoTemplates"
-        },
-    ]
-)
-
 
 def runtests(*test_args):
-    if not settings.configured:
-        settings.configure(**DEFAULT_SETTINGS)
-
-    # Compatibility with Django 1.7's stricter initialization
-    if hasattr(django, "setup"):
-        django.setup()
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pinax.points.tests.settings")
+    django.setup()
 
     parent = os.path.dirname(os.path.abspath(__file__))
     sys.path.insert(0, parent)

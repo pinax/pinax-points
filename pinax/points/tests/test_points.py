@@ -1,16 +1,18 @@
 from datetime import timedelta
-# from threading import Thread
 
 from django.conf import settings
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ImproperlyConfigured
-from django.template import Template, Context, TemplateSyntaxError
+from django.template import Context, Template, TemplateSyntaxError
 from django.test import TestCase
-# from django.test import TestCase, TransactionTestCase
 
-from django.contrib.auth.models import User, Group
-
-from pinax.points.models import TargetStat, PointValue, AwardedPointValue
-from pinax.points.models import award_points, points_awarded
+from pinax.points.models import (
+    AwardedPointValue,
+    PointValue,
+    TargetStat,
+    award_points,
+    points_awarded,
+)
 
 
 def skipIf(cond):
@@ -23,8 +25,8 @@ def skipIf(cond):
 class BasePointsTestCase(object):
 
     def tearDown(self):
-        if hasattr(settings, "AGON_POINT_VALUES"):
-            del settings.AGON_POINT_VALUES
+        if hasattr(settings, "PINAX_POINT_VALUES"):
+            del settings.PINAX_POINT_VALUES
 
     def setup_users(self, N):
         self.users = [
@@ -447,7 +449,7 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
     def test_type_as(self):
         try:
             self.setup_users(1)
-            t = Template('{% load pinax_points_tags %}{% points_for_object user a points %}')
+            t = Template("{% load pinax_points_tags %}{% points_for_object user a points %}")
             t.render(Context({"user": self.users[0]}))
         except TemplateSyntaxError as e:
             self.assertEqual(str(e), "Second argument to 'points_for_object' should be 'as'")
@@ -455,13 +457,13 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
     def test_user_object_without_as(self):
         self.setup_users(1)
         award_points(self.users[0], 15)
-        t = Template('{% load pinax_points_tags %}{% points_for_object user %} Points')
+        t = Template("{% load pinax_points_tags %}{% points_for_object user %} Points")
         self.assertEqual(t.render(Context({"user": self.users[0]})), "15 Points")
 
     def test_user_object_with_as(self):
         self.setup_users(1)
         award_points(self.users[0], 10)
-        t = Template('{% load pinax_points_tags %}{% points_for_object user as points %}{{ points }} Points')  # noqa
+        t = Template("{% load pinax_points_tags %}{% points_for_object user as points %}{{ points }} Points")  # noqa
         self.assertEqual(t.render(Context({"user": self.users[0]})), "10 Points")
 
     def test_user_object_with_limit(self):
@@ -470,7 +472,7 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
         ap.timestamp = ap.timestamp - timedelta(days=14)
         ap.save()
         award_points(self.users[0], 18)
-        t = Template('{% load pinax_points_tags %}{% points_for_object user limit 7 days as points %}{{ points }} Points')  # noqa
+        t = Template("{% load pinax_points_tags %}{% points_for_object user limit 7 days as points %}{{ points }} Points")  # noqa
         self.assertEqual(t.render(Context({"user": self.users[0]})), "18 Points")
 
     def test_user_object_with_limit_30_days(self):
@@ -479,5 +481,5 @@ class PointsForObjectTagTestCase(BasePointsTestCase, TestCase):
         ap.timestamp = ap.timestamp - timedelta(days=14)
         ap.save()
         award_points(self.users[0], 18)
-        t = Template('{% load pinax_points_tags %}{% points_for_object user limit 30 days as points %}{{ points }} Points')  # noqa
+        t = Template("{% load pinax_points_tags %}{% points_for_object user limit 30 days as points %}{{ points }} Points")  # noqa
         self.assertEqual(t.render(Context({"user": self.users[0]})), "28 Points")

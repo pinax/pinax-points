@@ -1,3 +1,4 @@
+.cache
 build
 dist
 .coverage
@@ -8,3 +9,4 @@ MANIFEST
 *.egg
 docs/_build/
 htmlcov/
+.eggs

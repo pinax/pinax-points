@@ -2,16 +2,14 @@ import datetime
 import itertools
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
-from django.db import models, transaction, IntegrityError
+from django.db import IntegrityError, models, transaction
 from django.utils.encoding import python_2_unicode_compatible
 
-from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.models import ContentType
-
 from . import signals
-from .compat import GenericForeignKey
-
 
 ALLOW_NEGATIVE_TOTALS = getattr(settings, "PINAX_POINTS_ALLOW_NEGATIVE_TOTALS", True)
 

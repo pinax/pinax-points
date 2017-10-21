@@ -1,15 +1,13 @@
-import django
-
 from functools import update_wrapper
 
-from django.shortcuts import render_to_response, redirect
-from django.template import RequestContext
-
+import django
 from django.contrib import admin
 from django.contrib.admin import helpers
+from django.shortcuts import redirect, render_to_response
+from django.template import RequestContext
 
 from .forms import OneOffPointAwardForm
-from .models import PointValue, AwardedPointValue
+from .models import AwardedPointValue, PointValue
 
 
 class AwardedPointValueAdmin(admin.ModelAdmin):

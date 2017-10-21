@@ -1,29 +1,36 @@
+.. image:: http://pinaxproject.com/pinax-design/patches/pinax-points.svg
+
+============
 Pinax Points
 ============
 
 .. image:: http://slack.pinaxproject.com/badge.svg
    :target: http://slack.pinaxproject.com/
 
-.. image:: https://img.shields.io/travis/pinax/pinax-points.svg
-    :target: https://travis-ci.org/pinax/pinax-points
+.. image:: https://circleci.com/gh/pinax/pinax-points.svg?style=svg
+    :target: https://circleci.com/gh/pinax/pinax-points
 
-.. image:: https://img.shields.io/coveralls/pinax/pinax-points.svg
-    :target: https://coveralls.io/r/pinax/pinax-points
-
-.. image:: https://img.shields.io/pypi/dm/pinax-points.svg
-    :target:  https://pypi.python.org/pypi/pinax-points/
+.. image:: https://img.shields.io/codecov/c/github/pinax/pinax-points.svg
+    :target: https://codecov.io/gh/pinax/pinax-points
 
 .. image:: https://img.shields.io/pypi/v/pinax-points.svg
     :target:  https://pypi.python.org/pypi/pinax-points/
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target:  https://pypi.python.org/pypi/pinax-points/
-    
-    
+
+.. image:: https://img.shields.io/github/contributors/pinax/pinax-points.svg
+    :target:  https://github.com/pinax/pinax-points/issues/
+.. image:: https://img.shields.io/github/issues-pr/pinax/pinax-points.svg
+    :target:  https://github.com/pinax/pinax-points/issues/
+.. image:: https://img.shields.io/github/issues-pr-closed/pinax/pinax-points.svg
+    :target:  https://github.com/pinax/pinax-points/issues/
+
+
 Pinax
 ------
 
-Pinax is an open-source platform built on the Django Web Framework. It is an ecosystem of reusable Django apps, themes, and starter project templates. 
+Pinax is an open-source platform built on the Django Web Framework. It is an ecosystem of reusable Django apps, themes, and starter project templates.
 This collection can be found at http://pinaxproject.com.
 
 This app was developed as part of the Pinax ecosystem but is just a Django app and can be used independently of other Pinax apps.
@@ -32,7 +39,7 @@ This app was developed as part of the Pinax ecosystem but is just a Django app a
 pinax-points
 -------------
 
-``pinax-points`` is a points, positions and levels app for Django. 
+``pinax-points`` is a points, positions and levels app for Django.
 
 ``pinax-points``, formerly agon, provides the ability to track points on arbitrary
 objects in your system.  The common case being ``User`` instances. It can
@@ -66,13 +73,13 @@ See this blog post http://blog.pinaxproject.com/2016/02/26/recap-february-pinax-
 
 In case of any questions we recommend you join our Pinax Slack team (http://slack.pinaxproject.com) and ping us there instead of creating an issue on GitHub. Creating issues on GitHub is of course also valid but we are usually able to help you faster if you ping us in Slack.
 
-We also highly recommend reading our Open Source and Self-Care blog post (http://blog.pinaxproject.com/2016/01/19/open-source-and-self-care/).  
+We also highly recommend reading our Open Source and Self-Care blog post (http://blog.pinaxproject.com/2016/01/19/open-source-and-self-care/).
 
 
 Code of Conduct
 -----------------
 
-In order to foster a kind, inclusive, and harassment-free community, the Pinax Project has a code of conduct, which can be found here  http://pinaxproject.com/pinax/code_of_conduct/. 
+In order to foster a kind, inclusive, and harassment-free community, the Pinax Project has a code of conduct, which can be found here  http://pinaxproject.com/pinax/code_of_conduct/.
 We ask you to treat everyone as a smart human programmer that shares an interest in Python, Django, and Pinax with you.
 
 
