@@ -31,7 +31,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
     reason_display.short_description = "reason"
 
     def get_urls(self):
-        from django.conf.urls import patterns, url
+        from django.conf.urls import url
 
         urlpatterns = super(AwardedPointValueAdmin, self).get_urls()
 
@@ -44,14 +44,14 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             info = self.model._meta.app_label, self.model._meta.module_name
         else:
             info = self.model._meta.app_label, self.model._meta.model_name
-        return patterns(
-            "",
+        return [
             url(
                 r"^one_off_points/$",
                 wrap(self.one_off_points),
                 name="{0}_{1}_one_off_points".format(info[0], info[1])
             )
-        ) + urlpatterns
+        ] + urlpatterns
+
 
     def one_off_points(self, request):
         if request.method == "POST":
