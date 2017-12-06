@@ -40,19 +40,19 @@ class AwardedPointValue(models.Model):
     """
 
     # object association (User is special-cased as it's a common case)
-    target_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="awardedpointvalue_targets")
-    target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets")  # noqa
+    target_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="awardedpointvalue_targets", on_delete=models.CASCADE)
+    target_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_targets", on_delete=models.CASCADE)  # noqa
     target_object_id = models.IntegerField(null=True)
     target_object = GenericForeignKey("target_content_type", "target_object_id")
 
-    value = models.ForeignKey(PointValue, null=True)
+    value = models.ForeignKey(PointValue, null=True, on_delete=models.CASCADE)
 
     reason = models.CharField(max_length=140)
     points = models.IntegerField()
 
     # object association (User is special-cased as it's a common case)
-    source_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="awardedpointvalue_sources")
-    source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources")  # noqa
+    source_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="awardedpointvalue_sources", on_delete=models.CASCADE)
+    source_content_type = models.ForeignKey(ContentType, null=True, related_name="awardedpointvalue_sources", on_delete=models.CASCADE)  # noqa
     source_object_id = models.IntegerField(null=True)
     source_object = GenericForeignKey("source_content_type", "source_object_id")
 
@@ -86,8 +86,8 @@ class TargetStat(models.Model):
     """
 
     # object association (User is special-cased as it's a common case)
-    target_user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, related_name="targetstat_targets")
-    target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets")  # noqa
+    target_user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, related_name="targetstat_targets", on_delete=models.CASCADE)
+    target_content_type = models.ForeignKey(ContentType, null=True, related_name="targetstat_targets", on_delete=models.CASCADE)  # noqa
     target_object_id = models.IntegerField(null=True)
     target_object = GenericForeignKey("target_content_type", "target_object_id")
 
