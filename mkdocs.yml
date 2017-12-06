@@ -1,9 +1,0 @@
-site_name: pinax-points
-pages:
-- [index.md, Home]
-- [changelog.md, Change Log]
-theme: readthedocs
-repo_url: https://github.com/pinax/pinax-points
-site_description: "a points, positions and levels app for Django"
-site_author: "Pinax Team"
-markdown_extensions: [admonition]
