@@ -52,7 +52,6 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             )
         ] + urlpatterns
 
-
     def one_off_points(self, request):
         if request.method == "POST":
             form = OneOffPointAwardForm(request.POST)
