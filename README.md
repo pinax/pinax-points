@@ -17,6 +17,7 @@
 
 * [About Pinax](#about-pinax)
 * [Overview](#overview)
+  * [History](#history)
   * [Features](#features)
   * [Supported Django and Python versions](#supported-django-and-python-versions)
 * [Documentation](#documentation)
@@ -43,6 +44,11 @@ Django apps, themes, and starter project templates. This collection can be found
 
 `pinax-points` is a points, positions and levels app for Django.
 
+#### History
+
+`pinax-points`, formerly known as `agon`.
+The code was mostly extracted from [typewar](http://typewar.com) and made slightly more
+generic to work well.
 
 #### Features
 
@@ -50,13 +56,13 @@ Django apps, themes, and starter project templates. This collection can be found
 objects in your system.  The common case being `User` instances. It can
 additionally keep track of positions for these objects to produce leaderboards.
 
-
 #### Supported Django and Python versions
 
 Django \ Python | 2.7 | 3.4 | 3.5 | 3.6
 --------------- | --- | --- | --- | ---
 1.11 |  *  |  *  |  *  |  *  
 2.0  |     |  *  |  *  |  *
+
 
 ## Documentation
 
@@ -85,6 +91,12 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
 
 ## Change Log
 
+### 0.6
+
+* Improving tox.ini syntax
+* Standardizing setup.py and docs
+* Improving .gitignore
+
 ### 0.5
 
 * Standardize documentation layout
@@ -102,13 +114,6 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
 ### 0.3
 
 ### 0.1
-
-
-## History
-
-`pinax-points`, formerly known as `agon`.
-The code was mostly extracted from [typewar](http://typewar.com) and made slightly more
-generic to work well.
 
 
 ## Contribute

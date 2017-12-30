@@ -1,6 +1,5 @@
 from setuptools import find_packages, setup
 
-VERSION = "0.5"
 LONG_DESCRIPTION = """
 .. image:: http://pinaxproject.com/pinax-design/patches/pinax-points.svg
     :target: https://pypi.python.org/pypi/pinax-points/
@@ -11,6 +10,8 @@ Pinax Points
 
 .. image:: https://img.shields.io/pypi/v/pinax-points.svg
     :target: https://pypi.python.org/pypi/pinax-points/
+
+\ 
 
 .. image:: https://img.shields.io/circleci/project/github/pinax/pinax-points.svg
     :target: https://circleci.com/gh/pinax/pinax-points
@@ -23,10 +24,14 @@ Pinax Points
 .. image:: https://img.shields.io/github/issues-pr-closed/pinax/pinax-points.svg
     :target: https://github.com/pinax/pinax-points/pulls?q=is%3Apr+is%3Aclosed
 
+\ 
+
 .. image:: http://slack.pinaxproject.com/badge.svg
     :target: http://slack.pinaxproject.com/
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target: https://pypi.python.org/pypi/pinax-points/
+
+\ 
 
 ``pinax-points`` is a points, positions and levels app for Django.
 
@@ -39,11 +44,11 @@ Supported Django and Python Versions
 ------------------------------------
 
 +-----------------+-----+-----+-----+-----+
-| Django \ Python | 2.7 | 3.4 | 3.5 | 3.6 |
+| Django / Python | 2.7 | 3.4 | 3.5 | 3.6 |
 +=================+=====+=====+=====+=====+
-| 1.11            |  *  |  *  |  *  |  *  |
+|  1.11           |  *  |  *  |  *  |  *  |
 +-----------------+-----+-----+-----+-----+
-| 2.0             |     |  *  |  *  |  *  |
+|  2.0            |     |  *  |  *  |  *  |
 +-----------------+-----+-----+-----+-----+
 """
 
@@ -53,7 +58,7 @@ setup(
     description="a points, positions and levels app for Django",
     name="pinax-points",
     long_description=LONG_DESCRIPTION,
-    version=VERSION,
+    version="0.6",
     url="http://github.com/pinax/pinax-points/",
     license="MIT",
     packages=find_packages(),

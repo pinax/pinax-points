@@ -11,7 +11,7 @@ from pinax.points.models import (
     PointValue,
     TargetStat,
     award_points,
-    points_awarded,
+    points_awarded
 )
 
 
