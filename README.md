@@ -17,7 +17,6 @@
 
 * [About Pinax](#about-pinax)
 * [Overview](#overview)
-  * [History](#history)
   * [Features](#features)
   * [Supported Django and Python versions](#supported-django-and-python-versions)
 * [Documentation](#documentation)
@@ -32,6 +31,7 @@
 * [Connect with Pinax](#connect-with-pinax)
 * [License](#license)
 
+
 ## About Pinax
 
 Pinax is an open-source platform built on the Django Web Framework. It is an ecosystem of reusable
@@ -43,12 +43,6 @@ Django apps, themes, and starter project templates. This collection can be found
 ### Overview
 
 `pinax-points` is a points, positions and levels app for Django.
-
-#### History
-
-`pinax-points`, formerly known as `agon`.
-The code was mostly extracted from [typewar](http://typewar.com) and made slightly more
-generic to work well.
 
 #### Features
 
@@ -74,11 +68,14 @@ To install pinax-points:
 
 Add `pinax.points` to your `INSTALLED_APPS` setting:
 
-    INSTALLED_APPS = (
+```python
+    INSTALLED_APPS = [
         ...
         "pinax.points",
         ...
-    )
+    ]
+```
+
 
 ### Usage
 
@@ -86,7 +83,14 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
 
 ##### `points_awarded`
 
+
 #### Template Tags
+
+##### `points_for_object`
+
+##### `top_objects`
+
+##### `user_has_voted`
 
 
 ## Change Log
@@ -116,6 +120,13 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
 ### 0.1
 
 
+## History
+
+`pinax-points` was formerly known as `agon`.
+The code was mostly extracted from [typewar](http://typewar.com) and made slightly more
+generic to work well.
+
+
 ## Contribute
 
 For an overview on how contributing to Pinax works read this [blog post](http://blog.pinaxproject.com/2016/02/26/recap-february-pinax-hangout/)
@@ -128,6 +139,7 @@ and ping us there instead of creating an issue on GitHub. Creating issues on Git
 also valid but we are usually able to help you faster if you ping us in Slack.
 
 We also highly recommend reading our blog post on [Open Source and Self-Care](http://blog.pinaxproject.com/2016/01/19/open-source-and-self-care/).
+
 
 ## Code of Conduct
 

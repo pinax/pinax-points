@@ -1,5 +1,6 @@
 from setuptools import find_packages, setup
 
+VERSION = "0.6"
 LONG_DESCRIPTION = """
 .. image:: http://pinaxproject.com/pinax-design/patches/pinax-points.svg
     :target: https://pypi.python.org/pypi/pinax-points/
@@ -58,7 +59,7 @@ setup(
     description="a points, positions and levels app for Django",
     name="pinax-points",
     long_description=LONG_DESCRIPTION,
-    version="0.6",
+    version=VERSION,
     url="http://github.com/pinax/pinax-points/",
     license="MIT",
     packages=find_packages(),
