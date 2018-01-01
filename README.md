@@ -70,30 +70,114 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
 
 ```python
     INSTALLED_APPS = [
-        ...
+        # other apps
         "pinax.points",
-        ...
     ]
 ```
 
 
 ### Usage
 
+#### Setting and Getting Points
+
+
+##### `award_points(target, value, reason="", source=None)`
+
+Award points to any model instance by invoking `award_points()`. 
+
+```python
+    from pinax.points.models import award_points
+    
+    award_points(user, 50)
+```
+
+##### `points_awarded(target)`
+
+Obtain points awarded based on argument criteria.
+
+```python
+    from pinax.points.models import points_awarded
+    
+    points = points_awarded(user)
+```
+
+
+#### Template Display
+
+To display overall points for an object, use templatetag `points_for_object` to set and display a context variable:
+
+```djangotemplate
+    {% load pinax_points_tags %}
+    
+    {% points_for_object user as points %}
+    <div class="user-points">{{ points }}</div>
+```
+    
+Although this example shows points for a User, any type of model instance is valid.
+For example if you want to display points for a blog post:
+
+```djangotemplate
+    {% load pinax_points_tags %}
+    
+    {% points_for_object post as points %}
+    <div class="post-points">{{ points }}</div>
+```
+
 #### Signals
 
 ##### `points_awarded`
 
+Triggered when points are awarded to an object.
+
+    providing_args=["target", "key", "points", "source"]
 
 #### Template Tags
 
 ##### `points_for_object`
 
+Returns the current points for an object.
+
+Usage:
+
+    {% points_for_object user %}
+    
+  or
+
+    {% points_for_object user as points %}
+    
+  or
+  
+    {% points_for_object user limit 7 days as points %}
+    
 ##### `top_objects`
 
+Returns a queryset of the model passed in with points annotated.
+
+Usage:
+
+    {% top_objects "auth.User" as top_users limit 10 %}
+    
+  or
+  
+    {% top_objects "auth.User" as top_users %}
+    
+  or
+  
+    {% top_objects "auth.User" as top_users limit 10 timeframe 7 days %}
+    
 ##### `user_has_voted`
 
+Returns True if `user` has voted on `obj`, False otherwise.
+
+Usage:
+
+    {% user_has_voted user obj as var %}
 
 ## Change Log
+
+### 0.7
+
+* Improve usage documentation
 
 ### 0.6
 
