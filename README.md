@@ -68,11 +68,13 @@ To install pinax-points:
 
 Add `pinax.points` to your `INSTALLED_APPS` setting:
 
-    INSTALLED_APPS = (
+```python
+    INSTALLED_APPS = [
         ...
         "pinax.points",
         ...
-    )
+    ]
+```
 
 ### Usage
 
@@ -80,7 +82,14 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
 
 ##### `points_awarded`
 
+
 #### Template Tags
+
+##### `points_for_object`
+
+##### `top_objects`
+
+##### `user_has_voted`
 
 
 ## Change Log
@@ -106,7 +115,7 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
 
 ## History
 
-`pinax-points`, formerly known as `agon`.
+`pinax-points` was formerly known as `agon`.
 The code was mostly extracted from [typewar](http://typewar.com) and made slightly more
 generic to work well.
 
