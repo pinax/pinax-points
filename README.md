@@ -31,6 +31,7 @@
 * [Connect with Pinax](#connect-with-pinax)
 * [License](#license)
 
+
 ## About Pinax
 
 Pinax is an open-source platform built on the Django Web Framework. It is an ecosystem of reusable
@@ -43,13 +44,11 @@ Django apps, themes, and starter project templates. This collection can be found
 
 `pinax-points` is a points, positions and levels app for Django.
 
-
 #### Features
 
 `pinax-points` provides the ability to track points on arbitrary
 objects in your system.  The common case being `User` instances. It can
 additionally keep track of positions for these objects to produce leaderboards.
-
 
 #### Supported Django and Python versions
 
@@ -57,6 +56,7 @@ Django \ Python | 2.7 | 3.4 | 3.5 | 3.6
 --------------- | --- | --- | --- | ---
 1.11 |  *  |  *  |  *  |  *  
 2.0  |     |  *  |  *  |  *
+
 
 ## Documentation
 
@@ -76,6 +76,7 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
     ]
 ```
 
+
 ### Usage
 
 #### Signals
@@ -93,6 +94,12 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
 
 
 ## Change Log
+
+### 0.6
+
+* Improving tox.ini syntax
+* Standardizing setup.py and docs
+* Improving .gitignore
 
 ### 0.5
 
@@ -132,6 +139,7 @@ and ping us there instead of creating an issue on GitHub. Creating issues on Git
 also valid but we are usually able to help you faster if you ping us in Slack.
 
 We also highly recommend reading our blog post on [Open Source and Self-Care](http://blog.pinaxproject.com/2016/01/19/open-source-and-self-care/).
+
 
 ## Code of Conduct
 
