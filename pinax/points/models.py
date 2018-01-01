@@ -227,7 +227,7 @@ def award_points(target, key, reason="", source=None):
 
 def points_awarded(target=None, source=None, since=None):
     """
-    Determine out how many points the given target has recieved.
+    Determine out how many points the given target has received.
     """
 
     lookup_params = {}

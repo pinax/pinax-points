@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-VERSION = "0.6"
+VERSION = "0.7"
 LONG_DESCRIPTION = """
 .. image:: http://pinaxproject.com/pinax-design/patches/pinax-points.svg
     :target: https://pypi.python.org/pypi/pinax-points/
