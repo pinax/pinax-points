@@ -1,11 +1,11 @@
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from .models import award_points
 
 
 class OneOffPointAwardForm(forms.Form):
-    user = forms.ModelChoiceField(User.objects.filter(is_active=True))
+    user = forms.ModelChoiceField(get_user_model().objects.filter(is_active=True))
     points = forms.IntegerField()
     reason = forms.CharField(max_length=140)
 
