@@ -65,7 +65,9 @@ Django \ Python | 2.7 | 3.4 | 3.5 | 3.6
 
 To install pinax-points:
 
-    pip install pinax-points
+```shell
+    $ pip install pinax-points
+```
 
 Add `pinax.points` to your `INSTALLED_APPS` setting:
 
@@ -104,7 +106,7 @@ Obtain points awarded based on argument criteria.
 
 To display overall points for an object, use templatetag `points_for_object` to set and display a context variable:
 
-```djangotemplate
+```django
     {% load pinax_points_tags %}
     
     {% points_for_object user as points %}
@@ -114,7 +116,7 @@ To display overall points for an object, use templatetag `points_for_object` to 
 Although this example shows points for a User, any type of model instance is valid.
 For example if you want to display points for a blog post:
 
-```djangotemplate
+```django
     {% load pinax_points_tags %}
     
     {% points_for_object post as points %}
@@ -137,40 +139,52 @@ Returns the current points for an object.
 
 Usage:
 
+```django
     {% points_for_object user %}
-    
+```
+
   or
 
+```django
     {% points_for_object user as points %}
-    
+```
+
   or
   
+```django
     {% points_for_object user limit 7 days as points %}
-    
+```
+
 ##### `top_objects`
 
 Returns a queryset of the model passed in with points annotated.
 
 Usage:
 
+```django
     {% top_objects "auth.User" as top_users limit 10 %}
-    
+```
+
   or
-  
+```django
     {% top_objects "auth.User" as top_users %}
-    
+```
+
   or
   
+```django
     {% top_objects "auth.User" as top_users limit 10 timeframe 7 days %}
-    
+```
+
 ##### `user_has_voted`
 
 Returns True if `user` has voted on `obj`, False otherwise.
 
 Usage:
 
+```django
     {% user_has_voted user obj as var %}
-
+```
 
 ## Change Log
 
