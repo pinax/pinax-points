@@ -13,6 +13,7 @@
 [![](http://slack.pinaxproject.com/badge.svg)](http://slack.pinaxproject.com/)
 [![](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
+
 ## Table of Contents
 
 * [About Pinax](#about-pinax)
@@ -75,11 +76,9 @@ Add `pinax.points` to your `INSTALLED_APPS` setting:
     ]
 ```
 
-
 ### Usage
 
 #### Setting and Getting Points
-
 
 ##### `award_points(target, value, reason="", source=None)`
 
@@ -100,7 +99,6 @@ Obtain points awarded based on argument criteria.
     
     points = points_awarded(user)
 ```
-
 
 #### Template Display
 
@@ -172,6 +170,7 @@ Returns True if `user` has voted on `obj`, False otherwise.
 Usage:
 
     {% user_has_voted user obj as var %}
+
 
 ## Change Log
 
