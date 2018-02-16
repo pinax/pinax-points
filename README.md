@@ -188,18 +188,12 @@ Usage:
 
 ## Change Log
 
-### 0.7
+### 1.0
 
 * Improve usage documentation
-
-### 0.6
-
 * Improving tox.ini syntax
 * Standardizing setup.py and docs
 * Improving .gitignore
-
-### 0.5
-
 * Standardize documentation layout
 * Drop Django v1.8, 1.9, 1.10 support
 * Drop Python 3.3 support
