@@ -1,10 +1,9 @@
-from functools import update_wrapper
-
 import django
 from django.contrib import admin
 from django.contrib.admin import helpers
-from django.shortcuts import redirect, render_to_response
+from django.shortcuts import redirect, render
 from django.template import RequestContext
+from functools import update_wrapper
 
 from .forms import OneOffPointAwardForm
 from .models import AwardedPointValue, PointValue
@@ -28,6 +27,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
                 return obj.reason
             else:
                 return None
+
     reason_display.short_description = "reason"
 
     def get_urls(self):
@@ -38,6 +38,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
         def wrap(view):
             def wrapper(*args, **kwargs):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
+
             return update_wrapper(wrapper, view)
 
         if django.VERSION < (1, 7):
@@ -45,12 +46,12 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
         else:
             info = self.model._meta.app_label, self.model._meta.model_name
         return [
-            url(
-                r"^one_off_points/$",
-                wrap(self.one_off_points),
-                name="{0}_{1}_one_off_points".format(info[0], info[1])
-            )
-        ] + urlpatterns
+                   url(
+                       r"^one_off_points/$",
+                       wrap(self.one_off_points),
+                       name="{0}_{1}_one_off_points".format(info[0], info[1])
+                   )
+               ] + urlpatterns
 
     def one_off_points(self, request):
         if request.method == "POST":
@@ -71,7 +72,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             "form": form,
         }
         ctx = RequestContext(request, ctx)
-        return render_to_response("pinax/points/one_off_points.html", ctx)
+        return render(None, "pinax/points/one_off_points.html", ctx)
 
 
 admin.site.register(AwardedPointValue, AwardedPointValueAdmin)
