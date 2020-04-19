@@ -7,14 +7,12 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError, models, transaction
-from django.utils.encoding import python_2_unicode_compatible
 
 from . import signals
 
 ALLOW_NEGATIVE_TOTALS = getattr(settings, "PINAX_POINTS_ALLOW_NEGATIVE_TOTALS", True)
 
 
-@python_2_unicode_compatible
 class PointValue(models.Model):
     """
     Stores a key and its point value. Simple.
@@ -32,7 +30,6 @@ class PointValue(models.Model):
         return "{0} points for {1}".format(self.value, self.key)
 
 
-@python_2_unicode_compatible
 class AwardedPointValue(models.Model):
     """
     Stores a single row for each time a point value is awarded. Can be used
