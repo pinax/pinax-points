@@ -55,8 +55,9 @@ additionally keep track of positions for these objects to produce leaderboards.
 
 Django \ Python | 2.7 | 3.4 | 3.5 | 3.6
 --------------- | --- | --- | --- | ---
-1.11 |  *  |  *  |  *  |  *  
-2.0  |     |  *  |  *  |  *
+1.11 |     |     |     |     
+2.0  |     |     |     |   
+3.0  |     |  *  |  *  |  *
 
 
 ## Documentation
