@@ -1,9 +1,10 @@
+from functools import update_wrapper
+
 import django
 from django.contrib import admin
 from django.contrib.admin import helpers
 from django.shortcuts import redirect, render
 from django.template import RequestContext
-from functools import update_wrapper
 
 from .forms import OneOffPointAwardForm
 from .models import AwardedPointValue, PointValue
@@ -45,13 +46,11 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             info = self.model._meta.app_label, self.model._meta.module_name
         else:
             info = self.model._meta.app_label, self.model._meta.model_name
-        return [
-                   url(
-                       r"^one_off_points/$",
-                       wrap(self.one_off_points),
-                       name="{0}_{1}_one_off_points".format(info[0], info[1])
-                   )
-               ] + urlpatterns
+        return [url(
+                r"^one_off_points/$",
+                wrap(self.one_off_points),
+                name="{0}_{1}_one_off_points".format(info[0], info[1])
+                )] + urlpatterns
 
     def one_off_points(self, request):
         if request.method == "POST":
