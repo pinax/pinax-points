@@ -8,4 +8,3 @@ test:
 	coverage erase
 	tox --parallel--safe-build
 	coverage html
-
