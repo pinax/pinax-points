@@ -71,7 +71,7 @@ class AwardedPointValueAdmin(admin.ModelAdmin):
             "form": form,
         }
         ctx = RequestContext(request, ctx)
-        return render(None, "pinax/points/one_off_points.html", ctx)
+        return render(request, "pinax/points/one_off_points.html", ctx)
 
 
 admin.site.register(AwardedPointValue, AwardedPointValueAdmin)
